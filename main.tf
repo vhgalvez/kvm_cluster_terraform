@@ -41,15 +41,14 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = {
-    for k, v in var.vm_count : [
-      for i in range(v.count) :
-      "${k}-${i+1}" => {
+  vm_instances = merge([
+    for k, v in var.vm_count : {
+      for i in range(v.count) : "${k}-${i+1}" => {
         cpus   = v.cpus
         memory = v.memory
       }
-    ]...
-  }
+    }
+  ]...)
 }
 
 resource "libvirt_domain" "vm" {
@@ -79,7 +78,7 @@ data "template_file" "vm-configs" {
 
   template = file(format(
     "${path.module}/configs/machine-%s-config.yaml.tmpl",
-    each.key
+    split("-", each.key)[0]
   ))
 
   vars = {
