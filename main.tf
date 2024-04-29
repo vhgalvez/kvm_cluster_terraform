@@ -72,12 +72,10 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
   }
 }
-
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
-  # Asegúrate de que el nombre del archivo refleja el nombre exacto del archivo en la carpeta.
-  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
