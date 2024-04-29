@@ -73,6 +73,7 @@ resource "libvirt_domain" "vm" {
   }
 }
 
+
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
