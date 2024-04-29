@@ -36,13 +36,12 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 
-# Expand each VM type into the actual number of VMs required
 resource "libvirt_domain" "vm" {
   for_each = { for k, v in var.vm_count : 
-               for idx in range(v.count) : 
-               "${k}-${idx}" => { cpus = v.cpus, memory = v.memory } }
+               k => { count = v.count, cpus = v.cpus, memory = v.memory } }
 
-  name     = "${each.key}-${var.cluster_name}"
+  count    = each.value.count
+  name     = "${each.key}-${count.index}-${var.cluster_name}"
   vcpu     = each.value.cpus
   memory   = each.value.memory
 
@@ -52,7 +51,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
+    volume_id = libvirt_volume.base[each.key].id
   }
 
   graphics {
@@ -63,15 +62,14 @@ resource "libvirt_domain" "vm" {
 
 data "template_file" "vm-configs" {
   for_each = { for k, v in var.vm_count : 
-               for idx in range(v.count) : 
-               "${k}-${idx}" => { cpus = v.cpus, memory = v.memory } }
+               k => { count = v.count, cpus = v.cpus, memory = v.memory } }
 
-  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys   = jsonencode(var.ssh_keys)
-    name       = split("-", each.key)[0]
-    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
+    name       = each.key
+    host_name  = "${each.key}-${count.index}.${var.cluster_name}.${var.cluster_domain}"
     strict     = true
     pretty_print = true
   }
