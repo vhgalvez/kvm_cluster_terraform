@@ -6,9 +6,9 @@ variable "base_image" {
 
 variable "vm_count" {
   description = "Map of VM types and their quantities"
-  type        = map(object({
-    count  : number
-    cpus   : number
+  type = map(object({
+    count : number
+    cpus : number
     memory : number
   }))
 }

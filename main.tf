@@ -60,7 +60,7 @@ locals {
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
-  name   = "${each.key}-${var.cluster_name}"
+  name   = "${each.value.name}-${var.cluster_name}"
   vcpu   = each.value.cpus
   memory = each.value.memory
 
@@ -70,7 +70,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
+    volume_id = libvirt_volume.base[split("-", each.value.name)[0]].id
   }
 
   graphics {
@@ -92,8 +92,11 @@ data "template_file" "vm-configs" {
     host_name    = "${each.value.name}.${var.cluster_name}.${var.cluster_domain}",
     strict       = true,
     pretty_print = true
+    vm_count     = var.vm_count
   }
 }
+
+
 
 # CT config data source
 data "ct_config" "vm-ignitions" {
