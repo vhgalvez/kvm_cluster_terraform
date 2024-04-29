@@ -1,3 +1,4 @@
+# main.tf 
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -9,9 +10,12 @@ terraform {
       source  = "poseidon/ct"
       version = "0.10.0"
     }
+    template = {
+      source  = "hashicorp/template"
+      version = "~> 2.2.0"
+    }
   }
 }
-
 # Provider configuration
 provider "libvirt" {
   uri = "qemu:///system"
