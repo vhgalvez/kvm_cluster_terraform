@@ -41,22 +41,20 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  // Adjusted local to ensure that the vm_instances is correctly declared
-  vm_instances = {
+  vm_instances = { 
     for k, v in var.vm_count : 
-      "${k}" => {
-        count = v.count,
-        cpus = v.cpus,
-        memory = v.memory
-      }
+    k => { 
+      count  = v.count
+      cpus   = v.cpus
+      memory = v.memory
+    }
   }
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances
 
-  count = each.value.count
-  name = "${each.key}-${count.index + 1}"
+  name = each.key
   vcpu = each.value.cpus
   memory = each.value.memory
 
@@ -76,7 +74,7 @@ resource "libvirt_domain" "vm" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances
 
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
