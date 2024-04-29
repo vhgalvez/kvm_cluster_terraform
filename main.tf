@@ -37,11 +37,11 @@ resource "libvirt_volume" "base" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = { for k, v in var.vm_count : 
-               for idx in range(v.count) : 
+  for_each = { for k, v in var.vm_count :
+               for idx in range(v.count) :
                "${k}-${idx}" => { cpus = v.cpus, memory = v.memory } }
 
-  name     = "${each.key}-${var.cluster_name}"
+  name     = each.key
   vcpu     = each.value.cpus
   memory   = each.value.memory
 
@@ -61,8 +61,8 @@ resource "libvirt_domain" "vm" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = { for k, v in var.vm_count : 
-               for idx in range(v.count) : 
+  for_each = { for k, v in var.vm_count :
+               for idx in range(v.count) :
                "${k}-${idx}" => { cpus = v.cpus, memory = v.memory } }
 
   template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
