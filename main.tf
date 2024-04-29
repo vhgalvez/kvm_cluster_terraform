@@ -41,14 +41,13 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = merge([
-    for k, v in var.vm_count : {
-      for idx in range(v.count) : "${k}-${idx}" => {
-        cpus   = v.cpus,
-        memory = v.memory
-      }
+  vm_instances = { 
+    for k, v in var.vm_count : 
+    for idx in range(v.count) : "${k}-${idx}" => {
+      cpus   = v.cpus,
+      memory = v.memory
     }
-  ]...)
+  }
 }
 
 resource "libvirt_domain" "vm" {
