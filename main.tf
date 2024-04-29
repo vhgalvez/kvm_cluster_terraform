@@ -38,11 +38,12 @@ resource "libvirt_volume" "base" {
 
 locals {
   vm_instances = { for k, v in var.vm_count : 
-    "${k}-${range(v.count)}" => {
-      cpus = v.cpus,
-      memory = v.memory
-    }
-  }
+                   for idx in range(v.count) : 
+                   "${k}-${idx}" => { 
+                     cpus = v.cpus, 
+                     memory = v.memory 
+                   }
+                 }
 }
 
 resource "libvirt_domain" "vm" {
