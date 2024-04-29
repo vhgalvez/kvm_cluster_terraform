@@ -16,12 +16,6 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
-locals {
-  vm_instances = { for k, v in var.vm_count :
-                   for idx in range(v.count) :
-                   "${k}-${idx}" => { cpus = v.cpus, memory = v.memory } }
-}
-
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -40,6 +34,17 @@ resource "libvirt_volume" "base" {
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
+}
+
+locals {
+  vm_instances = merge([
+    for k, v in var.vm_count : {
+      for idx in range(v.count) : "${k}-${idx}" => {
+        cpus = v.cpus,
+        memory = v.memory
+      }
+    }
+  ]...)
 }
 
 resource "libvirt_domain" "vm" {
@@ -70,10 +75,10 @@ data "template_file" "vm-configs" {
   template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys   = jsonencode(var.ssh_keys)
-    name       = split("-", each.key)[0]
-    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict     = true
+    ssh_keys   = jsonencode(var.ssh_keys),
+    name       = split("-", each.key)[0],
+    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict     = true,
     pretty_print = true
   }
 }
