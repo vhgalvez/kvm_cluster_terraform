@@ -47,8 +47,8 @@ locals {
                    "${k}-${idx}" => { 
                      cpus = v.cpus, 
                      memory = v.memory 
-                   }
-                 }
+                   }...
+                 }...
 }
 
 # Domain resource
