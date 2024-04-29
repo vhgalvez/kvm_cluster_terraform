@@ -72,14 +72,13 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
   }
 }
-
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
   template = file(format(
     "${path.module}/configs/machine-%s%s-config.yaml.tmpl",
     split("-", each.key)[0],
-    each.value.count > 1 ? format("-%s", element(split("-", each.key), 1)) : ""
+    each.value.count > 1 ? format("-%d", index(keys(local.vm_instances[split("-", each.key)[0]]), each.key) + 1) : ""
   ))
 
   vars = {
