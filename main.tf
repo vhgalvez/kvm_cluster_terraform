@@ -7,6 +7,7 @@ terraform {
     }
   }
 }
+
 provider "libvirt" {
   uri = "qemu:///system"
 }
@@ -26,12 +27,29 @@ resource "libvirt_pool" "volumetmp" {
 resource "libvirt_volume" "base" {
   for_each = var.vm_count
   name     = "${each.key}-base"
-  source   = "/var/lib/libvirt/images/${each.value.base_image}"
+  source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
-  backing_store {
-    path = var.base_image
-  }
+}
+
+resource "libvirt_volume" "vm_disk" {
+  for_each = { for vm_type, specs in var.vm_count : vm_type => specs if specs.count > 0 }
+  count    = each.value.count
+  name     = "${each.key}-${count.index + 1}.qcow2"
+  base_volume_id = libvirt_volume.base[each.key].id
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
+}
+
+locals {
+  vm_instances = merge([
+    for vm_type, config in var.vm_count : {
+      for i in range(config.count) : "${vm_type}-${i + 1}" => {
+        cpus   = config.cpus
+        memory = config.memory
+      }
+    }
+  ]...)
 }
 
 resource "libvirt_domain" "vm" {
@@ -39,7 +57,7 @@ resource "libvirt_domain" "vm" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convertir MB a KB
+  memory = each.value.memory * 1024
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -47,12 +65,12 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[each.key].id
+    volume_id = libvirt_volume.vm_disk[each.key].id
   }
 
   graphics {
-    type           = "vnc"
-    listen_type    = "address"
+    type        = "vnc"
+    listen_type = "address"
     listen_address = "0.0.0.0"
   }
 }
