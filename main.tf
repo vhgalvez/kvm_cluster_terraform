@@ -12,22 +12,26 @@ terraform {
   }
 }
 
+# Provider configuration
 provider "libvirt" {
   uri = "qemu:///system"
 }
 
+# Network resource
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
 
+# Pool resource
 resource "libvirt_pool" "volumetmp" {
   name = var.cluster_name
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
+# Volume resource
 resource "libvirt_volume" "base" {
   for_each = var.vm_count
   name     = "${each.key}-${var.cluster_name}-base"
@@ -36,6 +40,7 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 
+# Local variable for VM instances
 locals {
   vm_instances = { for k, v in var.vm_count : 
                    for idx in range(v.count) : 
@@ -46,6 +51,7 @@ locals {
                  }
 }
 
+# Domain resource
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
@@ -68,6 +74,7 @@ resource "libvirt_domain" "vm" {
   }
 }
 
+# Template file data source
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
 
@@ -82,11 +89,13 @@ data "template_file" "vm-configs" {
   }
 }
 
+# CT config data source
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
   content  = each.value.rendered
 }
 
+# Output IP addresses
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
