@@ -63,11 +63,13 @@ data "template_file" "vm-configs" {
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys = jsonencode(var.ssh_keys)
-    hostname = "${each.key}.${var.cluster_domain}"
+    ssh_keys     = jsonencode(var.ssh_keys)
+    name         = each.key
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
+    strict       = true
+    pretty_print = true
   }
 }
-
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
