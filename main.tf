@@ -76,7 +76,7 @@ resource "libvirt_domain" "vm" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = local.vm_instances
+  for_each = { for idx, inst in local.vm_instances : idx => inst }
 
   template = file("${path.module}/configs/machine-${split("-", each.value.name)[0]}-config.yaml.tmpl")
 
