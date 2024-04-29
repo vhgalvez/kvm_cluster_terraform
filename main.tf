@@ -40,13 +40,13 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 
-# Local variable for VM instances
 locals {
   vm_instances = { for k, v in var.vm_count : 
-                   for idx in range(v.count) : 
-                   "${k}-${idx}" => { 
-                     cpus = v.cpus, 
-                     memory = v.memory 
+                   { for idx in range(v.count) : 
+                     "${k}-${idx}" => { 
+                       cpus = v.cpus, 
+                       memory = v.memory 
+                     }
                    }...
                  }...
 }
