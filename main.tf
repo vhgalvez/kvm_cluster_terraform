@@ -40,14 +40,16 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 locals {
-  vm_instances = { for k, v in var.vm_count : 
-                   { for idx in range(v.count) : 
-                     "${k}-${idx}" => { 
-                       cpus = v.cpus, 
-                       memory = v.memory 
-                     }
-                   }...
-                 }...
+  vm_instances = merge(flatten([
+    for k, v in var.vm_count : [
+      for idx in range(v.count) : {
+        "${k}-${idx}" => {
+          cpus = v.cpus,
+          memory = v.memory
+        }
+      }
+    ]
+  ]))
 }
 
 # Domain resource
