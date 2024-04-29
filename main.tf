@@ -72,10 +72,15 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
   }
 }
+
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
-  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+  template = file(format(
+    "${path.module}/configs/machine-%s%s-config.yaml.tmpl",
+    split("-", each.key)[0],
+    length(split("-", each.key)) > 1 ? "-" + split("-", each.key)[1] : ""
+  ))
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
