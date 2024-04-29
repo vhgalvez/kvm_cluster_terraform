@@ -64,7 +64,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[each.key].id
+    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
   }
 
   graphics {
@@ -76,10 +76,7 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
-  template = file(format(
-    "${path.module}/configs/machine-%s-config.yaml.tmpl",
-    split("-", each.key)[0]
-  ))
+  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
