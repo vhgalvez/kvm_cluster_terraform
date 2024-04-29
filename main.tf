@@ -38,8 +38,9 @@ resource "libvirt_volume" "base" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = var.vm_count
-  name     = "${each.key}-${var.cluster_name}"
+  for_each = { for k, v in var.vm_count : k => v if v.count > 0 }
+  count    = each.value.count
+  name     = "${each.key}-${count.index}-${var.cluster_name}"
   vcpu     = each.value.cpus
   memory   = each.value.memory
 
@@ -77,8 +78,7 @@ data "ct_config" "vm-ignitions" {
 }
 
 output "ip_addresses" {
-  value = { for name, vm in libvirt_domain.vm : name => vm.network_interface[0].addresses[0] }
+  value = { for k, v in libvirt_domain.vm : "${k}-${count.index}" => v.network_interface[0].addresses[0] }
 }
-
 
 
