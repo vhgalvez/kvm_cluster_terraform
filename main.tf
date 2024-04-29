@@ -40,19 +40,14 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 
-
-
-
-
 locals {
-  vm_instances = merge([
-    for k, v in var.vm_count : {
-      for idx in range(v.count) : "${k}-${idx}" => {
-        cpus   = v.cpus,
-        memory = v.memory
-      }
-    }
-  ]...)
+  vm_instances = { for k, v in var.vm_count : 
+                   for idx in range(v.count) : 
+                   "${k}-${idx}" => {
+                     cpus = v.cpus,
+                     memory = v.memory
+                   }
+                 }
 }
 
 resource "libvirt_domain" "vm" {
@@ -77,24 +72,16 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-# Assume similar updates for data sources and outputs using locals.vm_instances.
-
-
-
-
-
-
-
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
 
   template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys),
-    name         = split("-", each.key)[0],
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
-    strict       = true,
+    ssh_keys   = jsonencode(var.ssh_keys),
+    name       = split("-", each.key)[0],
+    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict     = true,
     pretty_print = true
   }
 }
@@ -107,6 +94,3 @@ data "ct_config" "vm-ignitions" {
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
-
-
-
