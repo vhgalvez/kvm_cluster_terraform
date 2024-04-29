@@ -5,13 +5,14 @@ variable "base_image" {
 }
 
 variable "vm_count" {
-  description = "Map of VM types and their quantities"
+  description = "Map of VM types and their quantities, cpus, and memory"
   type = map(object({
     count : number
     cpus : number
     memory : number
   }))
 }
+
 
 variable "cluster_name" {
   description = "Name of the cluster"
