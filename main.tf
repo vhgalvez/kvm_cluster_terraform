@@ -39,14 +39,13 @@ resource "libvirt_volume" "base" {
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
 }
-
 locals {
   vm_instances = { for k, v in var.vm_count : 
                    "${k}" => { for idx in range(v.count) : 
                      "${idx}" => { 
                        cpus = v.cpus, 
                        memory = v.memory 
-                     }
+                     }...
                    }...
                  }...
 }
