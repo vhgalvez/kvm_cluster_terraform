@@ -31,19 +31,19 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
-
 resource "libvirt_volume" "base" {
-  for_each = var.vm_count
-  name     = "${each.key}-${var.cluster_name}-base"
+  for_each = local.vm_instances
+  name     = "${each.key}-base"
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
 }
 
+
 locals {
   vm_instances = merge([
     for k, v in var.vm_count : {
-      for i in range(v.count) : "${k}-${i+1}" => {
+      for i in range(v.count) : "${k}-${i + 1}" => {
         cpus   = v.cpus
         memory = v.memory
       }
@@ -54,7 +54,7 @@ locals {
 resource "libvirt_domain" "vm" {
   for_each = local.vm_instances
 
-  name   = "${each.key}-${var.cluster_name}"
+  name   = each.key
   vcpu   = each.value.cpus
   memory = each.value.memory
 
@@ -64,7 +64,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
+    volume_id = libvirt_volume.base[each.key].id
   }
 
   graphics {
@@ -72,6 +72,7 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
   }
 }
+
 
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
