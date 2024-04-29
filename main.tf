@@ -25,20 +25,10 @@ resource "libvirt_pool" "volumetmp" {
 }
 
 resource "libvirt_volume" "base" {
-  for_each = var.vm_count
-  name     = "${each.key}-base"
-  source   = var.base_image
-  pool     = libvirt_pool.volumetmp.name
-  format   = "qcow2"
-}
-
-resource "libvirt_volume" "vm_disk" {
-  for_each = { for vm_type, specs in var.vm_count : vm_type => specs if specs.count > 0 }
-  count    = each.value.count
-  name     = "${each.key}-${count.index + 1}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
-  pool     = libvirt_pool.volumetmp.name
-  format   = "qcow2"
+  name   = "${var.cluster_name}-base"
+  source = var.base_image
+  pool   = libvirt_pool.volumetmp.name
+  format = "qcow2"
 }
 
 locals {
@@ -47,20 +37,29 @@ locals {
       for i in range(config.count) : "${vm_type}-${i + 1}" => {
         cpus   = config.cpus
         memory = config.memory
+        type   = vm_type
       }
     }
   ]...)
 }
 
+resource "libvirt_volume" "vm_disk" {
+  for_each = locals.vm_instances
+  name     = "${each.key}.qcow2"
+  base_volume_id = libvirt_volume.base.id
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
+}
+
 resource "libvirt_domain" "vm" {
-  for_each = local.vm_instances
+  for_each = locals.vm_instances
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024
+  memory = each.value.memory * 1024  // Convertir MB a KB
 
   network_interface {
-    network_id     = libvirt_network.kube_network.id
+    network_id = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
