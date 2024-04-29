@@ -3,11 +3,11 @@ terraform {
   required_version = ">= 0.13"
   required_providers {
     libvirt = {
-      source = "dmacvicar/libvirt"
+      source  = "dmacvicar/libvirt"
       version = "0.7.0"
     }
     ct = {
-      source = "poseidon/ct"
+      source  = "poseidon/ct"
       version = "0.10.0"
     }
   }
@@ -18,8 +18,8 @@ provider "libvirt" {
 }
 
 resource "libvirt_network" "kube_network" {
-  name = "kube_network"
-  mode = "nat"
+  name      = "kube_network"
+  mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
 
@@ -60,13 +60,14 @@ resource "libvirt_domain" "vm" {
 
 data "template_file" "vm-configs" {
   for_each = var.vm_count
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys = jsonencode(var.ssh_keys)
     hostname = "${each.key}.${var.cluster_domain}"
   }
 }
+
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
@@ -76,3 +77,6 @@ data "ct_config" "vm-ignitions" {
 output "ip_addresses" {
   value = { for name, vm in libvirt_domain.vm : name => vm.network_interface[0].addresses[0] }
 }
+
+
+
