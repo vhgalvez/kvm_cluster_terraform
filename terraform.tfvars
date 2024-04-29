@@ -1,5 +1,5 @@
 # terraform.tfvars
-base_image = "/var/lib/libvirt/images/flatcar_production_qemu_image.img"
+base_image = "/var/lib/libvirt/images/flatcar_image/flatcar_image/flatcar_production_qemu_image.img"
 vm_count = {
   "bootstrap"     = { count = 1, cpus = 2, memory = 2048 },
   "master"        = { count = 3, cpus = 4, memory = 4096 },
