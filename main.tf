@@ -44,16 +44,15 @@ resource "libvirt_volume" "base" {
   format   = "qcow2"
 }
 locals {
-  vm_instances = {
-    for k, v in var.vm_count :
-    "${k}" => {
-      for idx in range(v.count) :
-      "${k}-${idx}" => {
-        cpus   = v.cpus
+  vm_instances = flatten([
+    for k, v in var.vm_count : [
+      for idx in range(v.count) : {
+        name   = "${k}-${idx}",
+        cpus   = v.cpus,
         memory = v.memory
       }
-    }
-  }
+    ]
+  ])
 }
 
 
@@ -84,12 +83,13 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
 
-  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${split("-", each.value.name)[0]}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
-    name         = split("-", each.key)[0],
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    name         = split("-", each.value.name)[0],
+    vm_name      = each.value.name,
+    host_name    = "${each.value.name}.${var.cluster_name}.${var.cluster_domain}",
     strict       = true,
     pretty_print = true
   }
