@@ -31,18 +31,17 @@ resource "libvirt_pool" "volumetmp" {
 
 resource "libvirt_volume" "base" {
   for_each = var.vm_count
-
-  name   = "${each.key}-${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
+  name     = "${each.key}-${var.cluster_name}-base"
+  source   = var.base_image
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
 }
 
 resource "libvirt_domain" "vm" {
   for_each = var.vm_count
   name     = "${each.key}-${var.cluster_name}"
-  vcpu     = var.virtual_cpus
-  memory   = var.virtual_memory
+  vcpu     = each.value.cpus
+  memory   = each.value.memory
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
