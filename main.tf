@@ -50,7 +50,7 @@ locals {
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
-  name     = each.key
+  name     = "${each.key}-${var.cluster_name}"
   vcpu     = each.value.cpus
   memory   = each.value.memory
 
