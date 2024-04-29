@@ -42,12 +42,13 @@ resource "libvirt_volume" "base" {
 
 locals {
   vm_instances = {
-    for k, v in var.vm_count :
-    k => {
-      count  = v.count
-      cpus   = v.cpus
-      memory = v.memory
-    }
+    for k, v in var.vm_count : [
+      for i in range(v.count) :
+      "${k}-${i+1}" => {
+        cpus   = v.cpus
+        memory = v.memory
+      }
+    ]...
   }
 }
 
@@ -72,13 +73,13 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
   }
 }
+
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
   template = file(format(
-    "${path.module}/configs/machine-%s%s-config.yaml.tmpl",
-    split("-", each.key)[0],
-    each.value.count > 1 ? format("-%d", index(keys(local.vm_instances[split("-", each.key)[0]]), each.key) + 1) : ""
+    "${path.module}/configs/machine-%s-config.yaml.tmpl",
+    each.key
   ))
 
   vars = {
