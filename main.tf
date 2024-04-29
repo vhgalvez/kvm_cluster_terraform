@@ -31,41 +31,64 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
+
 resource "libvirt_volume" "base" {
-  for_each = local.vm_instances
-  name     = "${each.key}-base"
-  source   = var.base_image
+  name   = "${var.cluster_name}-base"
+  source = var.base_image
+  pool   = libvirt_pool.volumetmp.name
+  format = "qcow2"
+}
+
+data "template_file" "vm-configs" {
+  for_each = toset(var.machines)
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+
+  vars = {
+    ssh_keys     = jsonencode(var.ssh_keys)
+    name         = each.key
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
+    strict       = true
+    pretty_print = true
+  }
+}
+
+data "ct_config" "vm-ignitions" {
+  for_each = toset(var.machines)
+  content  = data.template_file.vm-configs[each.key].rendered
+}
+
+resource "libvirt_ignition" "ignition" {
+  for_each = toset(var.machines)
+  name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  format   = "qcow2"
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
-
-locals {
-  vm_instances = merge([
-    for k, v in var.vm_count : {
-      for i in range(v.count) : "${k}-${i + 1}" => {
-        cpus   = v.cpus
-        memory = v.memory
-      }
-    }
-  ]...)
+resource "libvirt_volume" "vm_disk" {
+  for_each       = toset(var.machines)
+  name           = "${each.key}-${var.cluster_name}.qcow2"
+  base_volume_id = libvirt_volume.base.id
+  pool           = libvirt_pool.volumetmp.name
+  format         = "qcow2"
 }
 
-resource "libvirt_domain" "vm" {
-  for_each = local.vm_instances
+resource "libvirt_domain" "machine" {
+  for_each = toset(var.machines)
 
   name   = each.key
-  vcpu   = each.value.cpus
-  memory = each.value.memory
+  vcpu   = var.virtual_cpus
+  memory = var.virtual_memory
 
   network_interface {
-    network_id     = libvirt_network.kube_network.id
+    network_id = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
   disk {
-    volume_id = libvirt_volume.base[each.key].id
+    volume_id = libvirt_volume.vm_disk[each.key].id
   }
+
+  coreos_ignition = libvirt_ignition.ignition[each.key].id
 
   graphics {
     type        = "vnc"
@@ -73,27 +96,6 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-
-data "template_file" "vm-configs" {
-  for_each = local.vm_instances
-
-  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
-
-  vars = {
-    ssh_keys     = jsonencode(var.ssh_keys),
-    name         = each.key,
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
-    strict       = true,
-    pretty_print = true
-  }
-}
-
-data "ct_config" "vm-ignitions" {
-  for_each = data.template_file.vm-configs
-
-  content = each.value.rendered
-}
-
-output "ip_addresses" {
-  value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
+output "ip-addresses" {
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
