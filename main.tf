@@ -7,7 +7,6 @@ terraform {
     }
   }
 }
-
 provider "libvirt" {
   uri = "qemu:///system"
 }
@@ -40,10 +39,10 @@ resource "libvirt_domain" "vm" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024  // Convertir MB a KB
+  memory = each.value.memory * 1024 // Convertir MB a KB
 
   network_interface {
-    network_id = libvirt_network.kube_network.id
+    network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
@@ -52,8 +51,8 @@ resource "libvirt_domain" "vm" {
   }
 
   graphics {
-    type        = "vnc"
-    listen_type = "address"
+    type           = "vnc"
+    listen_type    = "address"
     listen_address = "0.0.0.0"
   }
 }
