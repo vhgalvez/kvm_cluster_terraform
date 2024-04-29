@@ -44,7 +44,7 @@ locals {
   vm_instances = merge([
     for k, v in var.vm_count : {
       for idx in range(v.count) : "${k}-${idx}" => {
-        cpus = v.cpus,
+        cpus   = v.cpus,
         memory = v.memory
       }
     }
