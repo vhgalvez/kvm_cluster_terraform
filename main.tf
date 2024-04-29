@@ -79,7 +79,7 @@ data "template_file" "vm-configs" {
   template = file(format(
     "${path.module}/configs/machine-%s%s-config.yaml.tmpl",
     split("-", each.key)[0],
-    length(split("-", each.key)) > 1 ? "-" + split("-", each.key)[1] : ""
+    each.value.count > 1 ? format("-%s", element(split("-", each.key), 1)) : ""
   ))
 
   vars = {
@@ -90,7 +90,6 @@ data "template_file" "vm-configs" {
     pretty_print = true
   }
 }
-
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
