@@ -41,34 +41,36 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = merge([
-    for k, v in var.vm_count : {
-      for idx in range(1, v.count + 1) : "${k}${v.count > 1 ? format("-%d", idx) : ""}" => {
-        cpus   = v.cpus,
+  // Adjusted local to ensure that the vm_instances is correctly declared
+  vm_instances = {
+    for k, v in var.vm_count : 
+      "${k}" => {
+        count = v.count,
+        cpus = v.cpus,
         memory = v.memory
       }
-    }
-  ]...)
+  }
 }
 
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
-  name   = each.key
-  vcpu   = each.value.cpus
+  count = each.value.count
+  name = "${each.key}-${count.index + 1}"
+  vcpu = each.value.cpus
   memory = each.value.memory
 
   network_interface {
-    network_id     = libvirt_network.kube_network.id
+    network_id = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
+    volume_id = libvirt_volume.base[each.key].id
   }
 
   graphics {
-    type        = "vnc"
+    type = "vnc"
     listen_type = "address"
   }
 }
@@ -76,11 +78,11 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
 
-  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys   = jsonencode(var.ssh_keys),
-    name       = split("-", each.key)[0],
+    name       = each.key,
     host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
     strict     = true,
     pretty_print = true
@@ -89,7 +91,8 @@ data "template_file" "vm-configs" {
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
-  content  = each.value.rendered
+
+  content = each.value.rendered
 }
 
 output "ip_addresses" {
