@@ -5,14 +5,6 @@ terraform {
       source  = "dmacvicar/libvirt"
       version = "0.7.0"
     }
-    ct = {
-      source  = "poseidon/ct"
-      version = "0.10.0"
-    }
-    template = {
-      source  = "hashicorp/template"
-      version = "~> 2.2.0"
-    }
   }
 }
 
@@ -33,21 +25,14 @@ resource "libvirt_pool" "volumetmp" {
 }
 
 resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
-}
-
-locals {
-  vm_instances = merge([
-    for vm_type, config in var.vm_count : {
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
-      }
-    }
-  ]...)
+  for_each = var.vm_count
+  name     = "${each.key}-base"
+  source   = "/var/lib/libvirt/images/${each.value.base_image}"
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
+  backing_store {
+    path = var.base_image
+  }
 }
 
 resource "libvirt_domain" "vm" {
@@ -63,7 +48,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base.id
+    volume_id = libvirt_volume.base[each.key].id
   }
 
   graphics {
