@@ -41,9 +41,9 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = { 
-    for k, v in var.vm_count : 
-    k => { 
+  vm_instances = {
+    for k, v in var.vm_count :
+    k => {
       count  = v.count
       cpus   = v.cpus
       memory = v.memory
@@ -76,7 +76,7 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
-  template = "${path.module}/configs/machine-${each.key}-config.yaml.tmpl" 
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys   = jsonencode(var.ssh_keys),
