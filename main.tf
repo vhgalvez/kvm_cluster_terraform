@@ -41,16 +41,15 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  // Adjusting the naming convention and ensuring single machines do not get a numeric suffix.
-  vm_instances = merge([
-    for k, v in var.vm_count : {
-      for idx in range(1, v.count + 1) : "${k}${v.count > 1 ? "-${idx}" : ""}" => {
-        cpus   = v.cpus,
-        memory = v.memory
-      }
+  vm_instances = {
+    for k, v in var.vm_count : 
+    for idx in range(1, v.count + 1) : "${k}${v.count > 1 ? format("-%d", idx) : ""}" => {
+      cpus   = v.cpus,
+      memory = v.memory
     }
-  ]...)
+  }
 }
+
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
@@ -79,10 +78,10 @@ data "template_file" "vm-configs" {
   template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys),
-    name         = split("-", each.key)[0],
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
-    strict       = true,
+    ssh_keys   = jsonencode(var.ssh_keys),
+    name       = split("-", each.key)[0],
+    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict     = true,
     pretty_print = true
   }
 }
