@@ -41,7 +41,7 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = { 
+  vm_instances = {
     for k, v in var.vm_count :
     for idx in range(v.count) : "${k}-${idx}" => {
       cpus   = v.cpus,
