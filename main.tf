@@ -32,33 +32,29 @@ resource "libvirt_pool" "volumetmp" {
 resource "libvirt_volume" "base" {
   for_each = var.vm_count
 
-  name = "${each.key}-${var.cluster_name}-base"
+  name   = "${each.key}-${var.cluster_name}-base"
   source = var.base_image
-  pool = libvirt_pool.volumetmp.name
+  pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
 
 resource "libvirt_domain" "vm" {
   for_each = var.vm_count
-
-  name = "${each.key}-${each.value.count}"
-  vcpu = each.value.cpus
-  memory = each.value.memory
+  name     = "${each.key}-${var.cluster_name}"
+  vcpu     = var.virtual_cpus
+  memory   = var.virtual_memory
 
   network_interface {
-    network_id = libvirt_network.kube_network.id
+    network_id     = libvirt_network.kube_network.id
+    wait_for_lease = true
   }
 
   disk {
     volume_id = libvirt_volume.base[each.key].id
   }
 
-  coreos_ignition {
-    user_data = data.ct_config.vm-ignitions[each.key].rendered
-  }
-
   graphics {
-    type = "vnc"
+    type        = "vnc"
     listen_type = "address"
   }
 }
@@ -75,9 +71,9 @@ data "template_file" "vm-configs" {
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
-  content = each.value.rendered
+  content  = each.value.rendered
 }
 
 output "ip_addresses" {
-  value = { for vm in libvirt_domain.vm : "${vm.name}" => vm.network_interface[0].addresses[0] }
+  value = { for name, vm in libvirt_domain.vm : name => vm.network_interface[0].addresses[0] }
 }
