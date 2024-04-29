@@ -1,4 +1,3 @@
-# main.tf 
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -42,21 +41,20 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = flatten([
-    for k, v in var.vm_count : [
-      for idx in range(v.count) : {
-        name   = "${k}-${idx}",
+  // Adjusting the naming convention and ensuring single machines do not get a numeric suffix.
+  vm_instances = merge([
+    for k, v in var.vm_count : {
+      for idx in range(1, v.count + 1) : "${k}${v.count > 1 ? "-${idx}" : ""}" => {
         cpus   = v.cpus,
         memory = v.memory
       }
-    ]
-  ])
+    }
+  ]...)
 }
-
 resource "libvirt_domain" "vm" {
-  for_each = { for inst in local.vm_instances : inst.name => inst }
+  for_each = locals.vm_instances
 
-  name   = "${each.value.name}-${var.cluster_name}"
+  name   = each.key
   vcpu   = each.value.cpus
   memory = each.value.memory
 
@@ -66,7 +64,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.value.name)[0]].id
+    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
   }
 
   graphics {
@@ -76,16 +74,16 @@ resource "libvirt_domain" "vm" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = { for idx, inst in local.vm_instances : idx => inst }
+  for_each = locals.vm_instances
 
-  template = file("${path.module}/configs/machine-${split("-", each.value.name)[0]}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
-    name         = split("-", each.value.name)[0],
-    host_name    = "${each.value.name}.${var.cluster_name}.${var.cluster_domain}",
+    name         = split("-", each.key)[0],
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
     strict       = true,
-    pretty_print = true,
+    pretty_print = true
   }
 }
 
