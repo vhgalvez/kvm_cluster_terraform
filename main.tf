@@ -54,12 +54,12 @@ locals {
 resource "libvirt_domain" "vm" {
   for_each = local.vm_instances
 
-  name = "${each.key}-${var.cluster_name}"
-  vcpu = each.value.cpus
+  name   = "${each.key}-${var.cluster_name}"
+  vcpu   = each.value.cpus
   memory = each.value.memory
 
   network_interface {
-    network_id = libvirt_network.kube_network.id
+    network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
@@ -68,7 +68,7 @@ resource "libvirt_domain" "vm" {
   }
 
   graphics {
-    type = "vnc"
+    type        = "vnc"
     listen_type = "address"
   }
 }
@@ -76,16 +76,18 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
+  # Asegúrate de que el nombre del archivo refleja el nombre exacto del archivo en la carpeta.
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys   = jsonencode(var.ssh_keys),
-    name       = each.key,
-    host_name  = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
-    strict     = true,
+    ssh_keys     = jsonencode(var.ssh_keys),
+    name         = each.key,
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
     pretty_print = true
   }
 }
+
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
