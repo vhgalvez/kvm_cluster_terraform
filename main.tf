@@ -54,7 +54,7 @@ locals {
 resource "libvirt_domain" "vm" {
   for_each = local.vm_instances
 
-  name = each.key
+  name = "${each.key}-${var.cluster_name}"
   vcpu = each.value.cpus
   memory = each.value.memory
 
@@ -76,7 +76,7 @@ resource "libvirt_domain" "vm" {
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
-  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+  template = "${path.module}/configs/machine-${each.key}-config.yaml.tmpl" 
 
   vars = {
     ssh_keys   = jsonencode(var.ssh_keys),
