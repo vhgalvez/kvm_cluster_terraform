@@ -1,4 +1,3 @@
-# main.tf 
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -10,32 +9,25 @@ terraform {
       source  = "poseidon/ct"
       version = "0.10.0"
     }
-    template = {
-      source  = "hashicorp/template"
-      version = "~> 2.2.0"
-    }
   }
 }
-# Provider configuration
+
 provider "libvirt" {
   uri = "qemu:///system"
 }
 
-# Network resource
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
 
-# Pool resource
 resource "libvirt_pool" "volumetmp" {
   name = var.cluster_name
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
-# Volume resource
 resource "libvirt_volume" "base" {
   for_each = var.vm_count
   name     = "${each.key}-${var.cluster_name}-base"
@@ -43,20 +35,18 @@ resource "libvirt_volume" "base" {
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
 }
+
 locals {
-  vm_instances = flatten([
-    for k, v in var.vm_count : [
-      for idx in range(v.count) : {
-        name   = "${k}-${idx}",
-        cpus   = v.cpus,
-        memory = v.memory
-      }
-    ]
-  ])
+  vm_instances = { for k, v in var.vm_count :
+                   for idx in range(v.count) :
+                   "${k}-${idx}" => {
+                     name = "${k}-${idx}",
+                     cpus = v.cpus,
+                     memory = v.memory
+                   }
+                 }
 }
 
-
-# Domain resource
 resource "libvirt_domain" "vm" {
   for_each = locals.vm_instances
 
@@ -70,7 +60,7 @@ resource "libvirt_domain" "vm" {
   }
 
   disk {
-    volume_id = libvirt_volume.base[split("-", each.value.name)[0]].id
+    volume_id = libvirt_volume.base[split("-", each.key)[0]].id
   }
 
   graphics {
@@ -79,32 +69,26 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-# Template file data source
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
 
-  template = file("${path.module}/configs/machine-${split("-", each.value.name)[0]}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys),
-    name         = split("-", each.value.name)[0],
-    vm_name      = each.value.name,
-    host_name    = "${each.value.name}.${var.cluster_name}.${var.cluster_domain}",
-    strict       = true,
+    ssh_keys   = jsonencode(var.ssh_keys),
+    name       = split("-", each.key)[0],
+    vm_name    = each.key,
+    host_name  = "${each.value.name}.${var.cluster_name}.${var.cluster_domain}",
+    strict     = true,
     pretty_print = true
-    vm_count     = var.vm_count
   }
 }
 
-
-
-# CT config data source
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
   content  = each.value.rendered
 }
 
-# Output IP addresses
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
