@@ -1,3 +1,36 @@
+terraform {
+  required_version = ">= 0.13"
+  required_providers {
+    libvirt = {
+      source  = "dmacvicar/libvirt"
+      version = "0.7.6"
+    }
+  }
+}
+
+provider "libvirt" {
+  uri = "qemu:///system"
+}
+
+resource "libvirt_network" "kube_network" {
+  name      = "kube_network"
+  mode      = "nat"
+  addresses = ["10.17.3.0/24"]
+}
+
+resource "libvirt_pool" "volumetmp" {
+  name = var.cluster_name
+  type = "dir"
+  path = "/var/lib/libvirt/images/${var.cluster_name}"
+}
+
+resource "libvirt_volume" "base" {
+  name   = "${var.cluster_name}-base"
+  source = var.base_image
+  pool   = libvirt_pool.volumetmp.name
+  format = "qcow2"
+}
+
 locals {
   vm_instances = merge([
     for vm_type, config in var.vm_count : {
@@ -11,11 +44,11 @@ locals {
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each = locals.vm_instances
-  name     = "${each.key}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
-  pool     = libvirt_pool.volumetmp.name
-  format   = "qcow2"
+  for_each       = locals.vm_instances
+  name           = "${each.key}.qcow2"
+  base_volume_id = libvirt_volume.base[each.value.type].id
+  pool           = libvirt_pool.volumetmp.name
+  format         = "qcow2"
 }
 
 resource "libvirt_domain" "vm" {
@@ -39,4 +72,8 @@ resource "libvirt_domain" "vm" {
     listen_type = "address"
     listen_address = "0.0.0.0"
   }
+}
+
+output "ip_addresses" {
+  value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] if length(vm.network_interface[0].addresses) > 0 }
 }
