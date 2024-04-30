@@ -33,6 +33,7 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
+
 locals {
   vm_instances = merge({
     for vm_type, config in var.vm_count :
@@ -43,8 +44,9 @@ locals {
     }
   }...)
 }
+
 resource "libvirt_volume" "base" {
-  for_each = local.vm_instances # use 'local' instead of 'locals'
+  for_each = local.vm_instances
   name     = "${each.key}-base"
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
@@ -52,9 +54,8 @@ resource "libvirt_volume" "base" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = local.vm_instances # use 'local' instead of 'locals'
+  for_each = local.vm_instances
   template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
-  
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
@@ -66,19 +67,19 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = local.vm_instances  # use 'local' instead of 'locals'
+  for_each = local.vm_instances
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = local.vm_instances  # use 'local' instead of 'locals'
+  for_each = local.vm_instances
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
   content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = local.vm_instances  # use 'local' instead of 'locals'
+  for_each       = local.vm_instances
   name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
@@ -86,7 +87,7 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "machine" {
-  for_each = local.vm_instances  # use 'local' instead of 'locals'
+  for_each = local.vm_instances
 
   name   = each.key
   vcpu   = each.value.cpus
@@ -108,6 +109,7 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
   }
 }
+
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
