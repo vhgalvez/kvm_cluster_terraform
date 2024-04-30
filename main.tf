@@ -30,7 +30,6 @@ resource "libvirt_volume" "base" {
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
-
 locals {
   vm_instances = merge([
     for vm_type, config in var.vm_count : {
@@ -44,7 +43,7 @@ locals {
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = locals.vm_instances
+  for_each       = local.vm_instances # Asegúrate de usar 'local.' y no 'locals.'
   name           = "${each.key}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
@@ -52,14 +51,14 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances # Uso correcto de 'local.'
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024  // Convert MB to KB
+  memory = each.value.memory * 1024 // Convert MB to KB
 
   network_interface {
-    network_id = libvirt_network.kube_network.id
+    network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
@@ -68,8 +67,8 @@ resource "libvirt_domain" "vm" {
   }
 
   graphics {
-    type        = "vnc"
-    listen_type = "address"
+    type           = "vnc"
+    listen_type    = "address"
     listen_address = "0.0.0.0"
   }
 }
