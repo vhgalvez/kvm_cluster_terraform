@@ -3,7 +3,7 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "0.7.6"
+      version = "0.7.0"  // Asegúrate de usar una versión compatible con tu entorno
     }
     ct = {
       source  = "poseidon/ct"
@@ -54,7 +54,7 @@ locals {
 }
 
 data "template_file" "vm-configs" {
-  for_each = local.vm_instances
+  for_each = toset(keys(local.vm_instances))
   template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
 
   vars = {
@@ -66,17 +66,16 @@ data "template_file" "vm-configs" {
   }
 }
 
-
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = data.ct_config.vm-ignitions
+  for_each = data.template_file.vm-configs
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = each.value.rendered
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -92,7 +91,8 @@ resource "libvirt_domain" "machine" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convert MB to KB
+  memory = each.value.memory * 1024  // Convert MB to KB
+  machine_type = "pc-q35-4.2"  // Asegúrate de elegir un tipo de máquina no obsoleto
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
