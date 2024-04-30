@@ -89,7 +89,7 @@ resource "libvirt_domain" "machine" {
   name    = each.key
   vcpu    = var.vm_count[split("-", each.key)[0]].cpus
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
-  machine = "q35"  # Actualizado a un tipo de máquina más moderno
+  machine = "q35"
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -111,3 +111,4 @@ resource "libvirt_domain" "machine" {
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
+
