@@ -33,19 +33,18 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
-
 locals {
   vm_instances = merge([
-    for vm_type, config in var.vm_count : 
-      { for i in range(config.count) : 
-        "${vm_type}-${i + 1}" => {
-          cpus   = config.cpus,
-          memory = config.memory
-        }
+    for vm_type, config in var.vm_count : {
+      for i in range(config.count) : "${vm_type}-${i + 1}" => {
+        cpus   = config.cpus,
+        memory = config.memory
       }
+    }
   ]...)
 }
 
+# Uso correcto de `locals.vm_instances`
 resource "libvirt_volume" "base" {
   for_each = locals.vm_instances
   name     = "${each.key}-base"
@@ -67,16 +66,11 @@ data "template_file" "vm-configs" {
   }
 }
 
-data "ct_config" "vm-ignitions" {
-  for_each = locals.vm_instances
-  content  = data.template_file.vm-configs[each.key].rendered
-}
-
 resource "libvirt_ignition" "ignition" {
   for_each = locals.vm_instances
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = each.value.rendered
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
