@@ -54,7 +54,7 @@ locals {
 }
 
 data "template_file" "vm-configs" {
-  for_each = toset(keys(var.vm_count))
+  for_each = toset(keys(local.vm_instances))
   template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
 
   vars = {
@@ -72,10 +72,10 @@ data "ct_config" "vm-ignitions" {
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = data.template_file.vm-configs
+  for_each = data.ct_config.vm-ignitions
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  content  = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
