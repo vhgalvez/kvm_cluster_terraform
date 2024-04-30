@@ -42,19 +42,35 @@ resource "libvirt_volume" "base" {
 }
 
 locals {
-  vm_instances = {
-    for vm_type, config in var.vm_count : 
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
-        type   = vm_type
-      }
+  vm_instances = { for idx in range(length(flatten([
+      for vm_type, config in var.vm_count : [
+        for i in range(config.count) : {
+          name   = "${vm_type}-${i + 1}"
+          cpus   = config.cpus
+          memory = config.memory
+          type   = vm_type
+        }
+      ]
+    ]))) : 
+    (flatten([
+      for vm_type, config in var.vm_count : [
+        for i in range(config.count) : "${vm_type}-${i + 1}"
+      ]
+    ])[idx]) => flatten([
+      for vm_type, config in var.vm_count : [
+        for i in range(config.count) : {
+          cpus   = config.cpus
+          memory = config.memory
+          type   = vm_type
+        }
+      ]
+    ])[idx]
   }
 }
 
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
-  template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
+  template = file("${path.module}/configs/${each.value.type}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys)
@@ -72,9 +88,10 @@ data "ct_config" "vm-ignitions" {
 
 resource "libvirt_ignition" "ignition" {
   for_each = data.ct_config.vm-ignitions
+
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  content  = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -111,8 +128,5 @@ resource "libvirt_domain" "machine" {
 }
 
 output "ip_addresses" {
-  value = {
-    for key, machine in libvirt_domain.machine : 
-      key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0
-  }
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
