@@ -1,3 +1,4 @@
+# main.tf
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -88,7 +89,7 @@ resource "libvirt_domain" "machine" {
   name    = each.key
   vcpu    = var.vm_count[split("-", each.key)[0]].cpus
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
-  machine = "q35" # Updated machine type
+  machine = "q35"  # Actualizado a un tipo de máquina más moderno
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
