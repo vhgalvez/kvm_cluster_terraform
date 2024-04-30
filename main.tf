@@ -5,12 +5,22 @@ terraform {
       source  = "dmacvicar/libvirt"
       version = "0.7.6"
     }
+    ct = {
+      source  = "poseidon/ct"
+      version = "0.10.0"
+    }
+    template = {
+      source  = "hashicorp/template"
+      version = "~> 2.2.0"
+    }
   }
 }
 
 provider "libvirt" {
   uri = "qemu:///system"
 }
+
+provider "ct" {}
 
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
@@ -30,32 +40,47 @@ resource "libvirt_volume" "base" {
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
-locals {
-  vm_instances = merge([
-    for vm_type, config in var.vm_count : {
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
-        type   = vm_type
-      }
-    }
-  ]...)
+
+data "template_file" "vm-configs" {
+  for_each = toset(var.machines)
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+
+  vars = {
+    ssh_keys     = jsonencode(var.ssh_keys)
+    name         = each.key
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
+    strict       = true
+    pretty_print = true
+  }
+}
+
+data "ct_config" "vm-ignitions" {
+  for_each = toset(var.machines)
+  content  = data.template_file.vm-configs[each.key].rendered
+}
+
+resource "libvirt_ignition" "ignition" {
+  for_each = toset(var.machines)
+  name     = "${each.key}-ignition"
+  pool     = libvirt_pool.volumetmp.name
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = local.vm_instances # Asegúrate de usar 'local.' y no 'locals.'
-  name           = "${each.key}.qcow2"
+  for_each       = toset(var.machines)
+  name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base.id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
 
-resource "libvirt_domain" "vm" {
-  for_each = local.vm_instances # Uso correcto de 'local.'
+resource "libvirt_domain" "machine" {
+  for_each = toset(var.machines)
 
-  name   = each.key
-  vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convert MB to KB
+  name         = each.key
+  vcpu         = var.virtual_cpus
+  memory       = var.virtual_memory
+  machine_type = "pc-q35-7.0" # Updated machine type
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -66,6 +91,8 @@ resource "libvirt_domain" "vm" {
     volume_id = libvirt_volume.vm_disk[each.key].id
   }
 
+  coreos_ignition = libvirt_ignition.ignition[each.key].id
+
   graphics {
     type           = "vnc"
     listen_type    = "address"
@@ -73,6 +100,6 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-output "ip_addresses" {
-  value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] if length(vm.network_interface[0].addresses) > 0 }
+output "ip-addresses" {
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0 }
 }
