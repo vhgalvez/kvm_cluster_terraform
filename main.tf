@@ -1,3 +1,4 @@
+
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -52,7 +53,8 @@ resource "libvirt_volume" "base" {
 
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
- template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl") 
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
@@ -109,3 +111,5 @@ resource "libvirt_domain" "machine" {
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
+
+
