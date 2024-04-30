@@ -45,14 +45,6 @@ locals {
   ]...)
 }
 
-resource "libvirt_volume" "base" {
-  for_each = locals.vm_instances
-  name     = "${each.key}-base"
-  source   = var.base_image
-  pool     = libvirt_pool.volumetmp.name
-  format   = "qcow2"
-}
-
 
 resource "libvirt_volume" "base" {
   for_each = locals.vm_instances
