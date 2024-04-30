@@ -77,7 +77,7 @@ resource "libvirt_domain" "vm" {
 
 # Define the libvirt_ignition resource
 resource "libvirt_ignition" "ignition" {
-  for_each = toset(var.vm_count)
+  for_each = toset(keys(var.vm_count)) # Fix here
 
   name    = "${each.key}-ignition"
   pool    = libvirt_pool.volumetmp.name
@@ -86,7 +86,7 @@ resource "libvirt_ignition" "ignition" {
 
 # Define the libvirt_volume for vm disks
 resource "libvirt_volume" "vm_disk" {
-  for_each       = toset(var.vm_count)
+  for_each       = toset(keys(var.vm_count)) # Fix here
   name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
@@ -118,4 +118,33 @@ data "ct_config" "vm-ignitions" {
 # Define the output for ip addresses
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
+}
+
+# variables.tf
+variable "base_image" {
+  description = "Path to the base VM image"
+  type        = string
+}
+
+variable "vm_count" {
+  description = "Map of VM types and their quantities, cpus, and memory"
+  type = map(object({
+    count : number
+    cpus : number
+    memory : number
+  }))
+}
+variable "cluster_name" {
+  description = "Name of the cluster"
+  type        = string
+}
+
+variable "cluster_domain" {
+  description = "Domain of the cluster"
+  type        = string
+}
+
+variable "ssh_keys" {
+  description = "SSH keys to inject into VMs"
+  type        = list(string)
 }
