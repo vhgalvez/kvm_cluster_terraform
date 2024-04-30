@@ -67,15 +67,15 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = data.template_file.vm-configs
-  content  = each.value.rendered
+  for_each = locals.vm_instances
+  content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
   for_each = locals.vm_instances
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = each.value.rendered
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
