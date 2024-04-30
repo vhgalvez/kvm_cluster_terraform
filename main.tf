@@ -40,23 +40,22 @@ resource "libvirt_volume" "base" {
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
-
 locals {
   vm_instances = { for idx in range(length(flatten([
-      for vm_type, config in var.vm_count : [
-        for i in range(config.count) : {
-          name   = "${vm_type}-${i + 1}"
-          cpus   = config.cpus
-          memory = config.memory
-          type   = vm_type
-        }
-      ]
-    ]))) : 
+    for vm_type, config in var.vm_count : [
+      for i in range(config.count) : {
+        name   = "${vm_type}-${i + 1}"
+        cpus   = config.cpus
+        memory = config.memory
+        type   = vm_type
+      }
+    ]
+    ]))) :
     (flatten([
       for vm_type, config in var.vm_count : [
         for i in range(config.count) : "${vm_type}-${i + 1}"
       ]
-    ])[idx]) => flatten([
+      ])[idx]) => flatten([
       for vm_type, config in var.vm_count : [
         for i in range(config.count) : {
           cpus   = config.cpus
@@ -89,9 +88,9 @@ data "ct_config" "vm-ignitions" {
 resource "libvirt_ignition" "ignition" {
   for_each = data.ct_config.vm-ignitions
 
-  name     = "${each.key}-ignition"
-  pool     = libvirt_pool.volumetmp.name
-  content  = each.value.rendered
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -121,8 +120,8 @@ resource "libvirt_domain" "machine" {
   coreos_ignition = libvirt_ignition.ignition[each.key].id
 
   graphics {
-    type        = "vnc"
-    listen_type = "address"
+    type           = "vnc"
+    listen_type    = "address"
     listen_address = "0.0.0.0"
   }
 }
