@@ -1,4 +1,3 @@
-# main.tf 
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -22,6 +21,7 @@ provider "libvirt" {
 }
 
 provider "ct" {}
+
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -33,6 +33,7 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
+
 resource "libvirt_volume" "base" {
   name   = "${var.cluster_name}-base"
   source = var.base_image
@@ -40,7 +41,6 @@ resource "libvirt_volume" "base" {
   format = "qcow2"
 }
 
-# create a map of vm instances
 locals {
   vm_instances = merge([
     for vm_type, config in var.vm_count : {
@@ -55,7 +55,7 @@ locals {
 
 data "template_file" "vm-configs" {
   for_each = toset(keys(local.vm_instances))
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl", )
+  template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys)
@@ -92,7 +92,6 @@ resource "libvirt_domain" "machine" {
   name   = each.key
   vcpu   = each.value.cpus
   memory = each.value.memory * 1024 // Convert MB to KB
-
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
