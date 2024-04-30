@@ -33,18 +33,16 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
-
 locals {
   vm_instances = merge({
-    for vm_type, config in var.vm_count : {
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
+    for vm_type, config in var.vm_count : 
+      "${vm_type}" => { for i in range(config.count) : "${i + 1}" => {
+          "cpus"   = config.cpus
+          "memory" = config.memory
+        }
       }
-    }
   }...)
 }
-
 resource "libvirt_volume" "base" {
   for_each = locals.vm_instances
   name     = "${each.key}-base"
