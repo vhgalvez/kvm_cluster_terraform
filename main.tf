@@ -1,4 +1,3 @@
-# main.tf con correcciones
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -21,8 +20,6 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
-provider "ct" {}
-
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -34,68 +31,32 @@ resource "libvirt_pool" "volumetmp" {
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
-
 resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
+  for_each = local.vm_instances
+  name     = "${each.key}-base"
+  source   = var.base_image
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
 }
 
-# Usar una estructura más simple si posible o verificar la definición de `var.vm_count`
+
 locals {
   vm_instances = merge([
-    for vm_type, config in var.vm_count : {
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
-        type   = vm_type
+    for k, v in var.vm_count : {
+      for i in range(v.count) : "${k}-${i + 1}" => {
+        cpus   = v.cpus
+        memory = v.memory
       }
     }
   ]...)
 }
 
-data "template_file" "vm-configs" {
-  for_each = local.vm_instances
-  template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
-
-  vars = {
-    ssh_keys     = jsonencode(var.ssh_keys)
-    name         = each.key
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict       = true
-    pretty_print = true
-  }
-}
-
-data "ct_config" "vm-ignitions" {
-  for_each = data.template_file.vm-configs
-  content  = data.template_file.vm-configs[each.key].rendered
-}
-
-resource "libvirt_ignition" "ignition" {
-  for_each = data.ct_config.vm-ignitions
-  
-  name     = "${each.key}-ignition"
-  pool     = libvirt_pool.volumetmp.name
-  content  = each.value.rendered
-}
-
-resource "libvirt_volume" "vm_disk" {
-  for_each       = local.vm_instances
-  name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base.id
-  pool           = libvirt_pool.volumetmp.name
-  format         = "qcow2"
-}
-
-resource "libvirt_domain" "machine" {
+resource "libvirt_domain" "vm" {
   for_each = local.vm_instances
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024
-  machine = "q35"
+  memory = each.value.memory
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -103,18 +64,36 @@ resource "libvirt_domain" "machine" {
   }
 
   disk {
-    volume_id = libvirt_volume.vm_disk[each.key].id
+    volume_id = libvirt_volume.base[each.key].id
   }
-
-  coreos_ignition = libvirt_ignition.ignition[each.key].id
 
   graphics {
     type        = "vnc"
     listen_type = "address"
-    listen_address = "0.0.0.0"
   }
 }
 
+
+data "template_file" "vm-configs" {
+  for_each = local.vm_instances
+
+  template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+
+  vars = {
+    ssh_keys     = jsonencode(var.ssh_keys),
+    name         = each.key,
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
+    pretty_print = true
+  }
+}
+
+data "ct_config" "vm-ignitions" {
+  for_each = data.template_file.vm-configs
+
+  content = each.value.rendered
+}
+
 output "ip_addresses" {
-  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
+  value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
