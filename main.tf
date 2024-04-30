@@ -4,7 +4,8 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "0.7.0"  
+      version = "0.7.0"
+    }
     ct = {
       source  = "poseidon/ct"
       version = "0.10.0"
@@ -21,25 +22,25 @@ provider "libvirt" {
 }
 
 provider "ct" {}
-
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
-
 resource "libvirt_pool" "volumetmp" {
   name = var.cluster_name
   type = "dir"
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
-
 resource "libvirt_volume" "base" {
   name   = "${var.cluster_name}-base"
   source = var.base_image
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
+
+
+
 
 locals {
   vm_instances = merge([
@@ -89,10 +90,10 @@ resource "libvirt_volume" "vm_disk" {
 resource "libvirt_domain" "machine" {
   for_each = local.vm_instances
 
-  name   = each.key
-  vcpu   = each.value.cpus
-  memory = each.value.memory * 1024  // Convert MB to KB
-  machine_type = "pc-q35-4.2"  // Asegúrate de elegir un tipo de máquina no obsoleto
+  name         = each.key
+  vcpu         = each.value.cpus
+  memory       = each.value.memory * 1024 // Convert MB to KB
+  machine_type = "pc-q35-4.2"             // Asegúrate de elegir un tipo de máquina no obsoleto
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
