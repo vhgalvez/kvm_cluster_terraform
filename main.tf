@@ -73,6 +73,7 @@ data "ct_config" "vm-ignitions" {
 
 resource "libvirt_ignition" "ignition" {
   for_each = data.ct_config.vm-ignitions
+  
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
   content  = each.value.rendered
