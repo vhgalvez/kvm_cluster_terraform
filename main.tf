@@ -23,44 +23,44 @@ provider "libvirt" {
 provider "ct" {}
 
 resource "libvirt_network" "kube_network" {
-  name      = "kube_network"
-  mode      = "nat"
+  name        = "kube_network"
+  mode        = "nat"
   addresses = ["10.17.3.0/24"]
 }
 
 resource "libvirt_pool" "volumetmp" {
   name = var.cluster_name
   type = "dir"
-  path = "/var/lib/libvirt/images/${var.cluster_name}"
+  path = "/var/lib/libvirt/images/<span class="math-inline">\{var\.cluster\_name\}"
+\}
+resource "libvirt\_volume" "base" \{
+name     \= "</span>{var.cluster_name}-base"
+  source   = var.base_image
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
 }
 
-resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
-}
 locals {
   vm_instances = { for idx in range(length(flatten([
     for vm_type, config in var.vm_count : [
       for i in range(config.count) : {
-        name   = "${vm_type}-${i + 1}"
-        cpus   = config.cpus
+        name  = "<span class="math-inline">\{vm\_type\}\-</span>{i + 1}"
+        cpus  = config.cpus
         memory = config.memory
-        type   = vm_type
+        type  = vm_type
       }
     ]
-    ]))) :
+  ]))): 
     (flatten([
       for vm_type, config in var.vm_count : [
-        for i in range(config.count) : "${vm_type}-${i + 1}"
+        for i in range(config.count) : "<span class="math-inline">\{vm\_type\}\-</span>{i + 1}"
       ]
-      ])[idx]) => flatten([
+    ])[idx]) => flatten([
       for vm_type, config in var.vm_count : [
         for i in range(config.count) : {
-          cpus   = config.cpus
+          cpus  = config.cpus
           memory = config.memory
-          type   = vm_type
+          type  = vm_type
         }
       ]
     ])[idx]
@@ -69,47 +69,44 @@ locals {
 
 data "template_file" "vm-configs" {
   for_each = locals.vm_instances
-  template = file("${path.module}/configs/${each.value.type}-config.yaml.tmpl")
+  template = file("<span class="math-inline">\{path\.module\}/configs/</span>{each.value.type}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys)
-    name         = each.key
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict       = true
-    pretty_print = true
-  }
-}
-
-data "ct_config" "vm-ignitions" {
-  for_each = data.template_file.vm-configs
-  content  = data.template_file.vm-configs[each.key].rendered
-}
-
-resource "libvirt_ignition" "ignition" {
-  for_each = data.ct_config.vm-ignitions
-
-  name    = "${each.key}-ignition"
-  pool    = libvirt_pool.volumetmp.name
-  content = each.value.rendered
+    ssh_keys    = jsonencode(var.ssh_keys)
+    name        = each.key
+    host_name   = "<span class="math-inline">\{each\.key\}\.</span>{var.cluster_name}.<span class="math-inline">\{var\.cluster\_domain\}"
+strict      \= true
+pretty\_print \= true
+\}
+\}
+data "ct\_config" "vm\-ignitions" \{
+for\_each \= data\.template\_file\.vm\-configs
+content  \= data\.template\_file\.vm\-configs\[each\.key\]\.rendered
+\}
+resource "libvirt\_ignition" "ignition" \{
+for\_each \= data\.ct\_config\.vm\-ignitions
+name     \= "</span>{each.key}-ignition"
+  pool     = libvirt_pool.volumetmp.name
+  content  = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = locals.vm_instances
-  name           = "${each.key}-${var.cluster_name}.qcow2"
+  for_each  = locals.vm_instances
+  name      = "<span class="math-inline">\{each\.key\}\-</span>{var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base.id
-  pool           = libvirt_pool.volumetmp.name
-  format         = "qcow2"
+  pool      = libvirt_pool.volumetmp.name
+  format    = "qcow2"
 }
 
 resource "libvirt_domain" "machine" {
   for_each = locals.vm_instances
 
-  name   = each.key
-  vcpu   = each.value.cpus
-  memory = each.value.memory * 1024
+  name        = each.key
+  vcpu        = each.value.cpus
+  memory      = each.value.memory * 1024
 
   network_interface {
-    network_id     = libvirt_network.kube_network.id
+    network_id  = libvirt_network.kube_network.id
     wait_for_lease = true
   }
 
