@@ -35,16 +35,16 @@ resource "libvirt_pool" "volumetmp" {
 }
 locals {
   vm_instances = merge({
-    for vm_type, config in var.vm_count : 
-      "${vm_type}" => { for i in range(config.count) : "${i + 1}" => {
-          "cpus"   = config.cpus,
-          "memory" = config.memory
-        }
+    for vm_type, config in var.vm_count :
+    "${vm_type}" => { for i in range(config.count) : "${i + 1}" => {
+      "cpus"   = config.cpus,
+      "memory" = config.memory
       }
+    }
   }...)
 }
 resource "libvirt_volume" "base" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances # use 'local' instead of 'locals'
   name     = "${each.key}-base"
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
@@ -52,8 +52,9 @@ resource "libvirt_volume" "base" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances # use 'local' instead of 'locals'
   template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+  
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
