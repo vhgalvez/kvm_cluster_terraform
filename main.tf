@@ -1,3 +1,4 @@
+# main.tf con correcciones
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -41,6 +42,7 @@ resource "libvirt_volume" "base" {
   format = "qcow2"
 }
 
+# Usar una estructura más simple si posible o verificar la definición de `var.vm_count`
 locals {
   vm_instances = merge([
     for vm_type, config in var.vm_count : {
@@ -94,8 +96,6 @@ resource "libvirt_domain" "machine" {
   vcpu   = each.value.cpus
   memory = each.value.memory * 1024
 
-  machine_type = "q35"  # Actualizar al tipo de máquina más reciente
-
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
@@ -112,4 +112,8 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
     listen_address = "0.0.0.0"
   }
+}
+
+output "ip_addresses" {
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
