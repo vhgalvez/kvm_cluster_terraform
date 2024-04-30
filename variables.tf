@@ -26,3 +26,8 @@ variable "ssh_keys" {
   description = "SSH keys to inject into VMs"
   type        = list(string)
 }
+variable "machines" {
+  description = "List of machines to create"
+  type        = list(string)
+  default     = []  # This will be dynamically populated in the locals or directly in terraform.tfvars if required
+}
