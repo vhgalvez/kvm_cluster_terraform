@@ -27,6 +27,7 @@ resource "libvirt_network" "kube_network" {
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
+
 resource "libvirt_pool" "volumetmp" {
   name = var.cluster_name
   type = "dir"
@@ -39,9 +40,7 @@ resource "libvirt_volume" "base" {
   format = "qcow2"
 }
 
-
-
-
+# create a map of vm instances
 locals {
   vm_instances = merge([
     for vm_type, config in var.vm_count : {
@@ -93,7 +92,7 @@ resource "libvirt_domain" "machine" {
   name         = each.key
   vcpu         = each.value.cpus
   memory       = each.value.memory * 1024 // Convert MB to KB
-  machine_type = "pc-q35-4.2"             // Asegúrate de elegir un tipo de máquina no obsoleto
+
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
