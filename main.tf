@@ -35,12 +35,15 @@ resource "libvirt_pool" "volumetmp" {
 }
 
 locals {
-  vm_instances = { for vm_type, config in var.vm_count :
-    for i in range(config.count) : "${vm_type}${i + 1}" => {
-      "cpus"   = config.cpus,
-      "memory" = config.memory
-    }
-  }
+  vm_instances = { for instance in flatten([
+      for vm_type, config in var.vm_count : [
+        for i in range(config.count) : {
+          name   = "${vm_type}${i + 1}"
+          cpus   = config.cpus
+          memory = config.memory
+        }
+      ]
+    ]) : instance.name => instance }
 }
 resource "libvirt_volume" "base" {
   for_each = local.vm_instances
