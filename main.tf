@@ -36,11 +36,11 @@ resource "libvirt_pool" "volumetmp" {
 locals {
   vm_instances = merge({
     for vm_type, config in var.vm_count : 
-      "${vm_type}" => { for i in range(config.count) : "${i + 1}" => {
+      { for i in range(config.count) : "${vm_type}-${i + 1}" => {
           "cpus"   = config.cpus
           "memory" = config.memory
         }
-      }
+      }...
   }...)
 }
 resource "libvirt_volume" "base" {
