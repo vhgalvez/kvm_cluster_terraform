@@ -1,4 +1,3 @@
-
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -50,6 +49,7 @@ resource "libvirt_volume" "base" {
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
 }
+
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
@@ -61,7 +61,6 @@ data "template_file" "vm-configs" {
     pretty_print = true
   }
 }
-
 
 data "ct_config" "vm-ignitions" {
   for_each = { for machine in local.machines : machine => {} }
@@ -86,9 +85,10 @@ resource "libvirt_volume" "vm_disk" {
 resource "libvirt_domain" "machine" {
   for_each = { for machine in local.machines : machine => {} }
 
-  name   = each.key
-  vcpu   = var.vm_count[split("-", each.key)[0]].cpus
-  memory = var.vm_count[split("-", each.key)[0]].memory * 1024
+  name    = each.key
+  vcpu    = var.vm_count[split("-", each.key)[0]].cpus
+  memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
+  machine = "q35" # Updated machine type
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -110,5 +110,3 @@ resource "libvirt_domain" "machine" {
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
-
-
