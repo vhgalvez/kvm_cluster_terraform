@@ -40,16 +40,17 @@ resource "libvirt_volume" "base" {
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
+
 locals {
-  vm_instances = {
-    for vm_type, config in var.vm_count : 
-      for i in range(config.count) : 
-        "${vm_type}-${i + 1}" => {
-          cpus   = config.cpus
-          memory = config.memory
-          type   = vm_type
-        }
-  }
+  vm_instances = merge([
+    for vm_type, config in var.vm_count : {
+      for i in range(config.count) : "${vm_type}-${i + 1}" => {
+        cpus   = config.cpus
+        memory = config.memory
+        type   = vm_type
+      }
+    }
+  ]...)
 }
 
 data "template_file" "vm-configs" {
@@ -71,10 +72,10 @@ data "ct_config" "vm-ignitions" {
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = data.template_file.vm-configs
+  for_each = data.ct_config.vm-ignitions
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  content  = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -90,7 +91,7 @@ resource "libvirt_domain" "machine" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convert MB to KB
+  memory = each.value.memory * 1024 # Convert MB to KB
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
