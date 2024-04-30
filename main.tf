@@ -73,6 +73,7 @@ resource "libvirt_domain" "vm" {
     listen_address = "0.0.0.0"
   }
 }
+
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] if length(vm.network_interface[0].addresses) > 0 }
 }
