@@ -37,7 +37,7 @@ resource "libvirt_pool" "volumetmp" {
 locals {
   machines = flatten([
     for vm_type, config in var.vm_count : [
-      for i in range(config.count) : "${vm_type}${i + 1}"
+      for i in range(config.count) : "${vm_type}-${i + 1}"
     ]
   ])
 }
@@ -52,7 +52,7 @@ resource "libvirt_volume" "base" {
 
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
-  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
@@ -87,8 +87,8 @@ resource "libvirt_domain" "machine" {
   for_each = { for machine in local.machines : machine => {} }
 
   name   = each.key
-  vcpu   = var.vm_count[split(" ", each.key)[0]].cpus
-  memory = var.vm_count[split(" ", each.key)[0]].memory * 1024
+  vcpu   = var.vm_count[split("-", each.key)[0]].cpus
+  memory = var.vm_count[split("-", each.key)[0]].memory * 1024
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
