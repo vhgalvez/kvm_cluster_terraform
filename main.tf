@@ -55,7 +55,7 @@ resource "libvirt_volume" "base" {
 
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
-  template = file("${path.module}/configs${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
   
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
