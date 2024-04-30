@@ -20,6 +20,8 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
+provider "ct" {}
+
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -32,20 +34,28 @@ resource "libvirt_pool" "volumetmp" {
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
+locals {
+  vm_instances = { for instance in flatten([
+    for vm_type, config in var.vm_count : [
+      for i in range(config.count) : {
+        name   = "${vm_type}${i + 1}"
+        cpus   = config.cpus
+        memory = config.memory
+      }
+    ]
+  ]) : instance.name => instance }
+}
 resource "libvirt_volume" "base" {
-  for_each = toset(var.machines)
+  for_each = local.vm_instances
   name     = "${each.key}-base"
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
-  # Ensure the volume uses a modern compatibility level if needed
-  qemu_img_arguments = ["amend", "-o", "compat=3"]
 }
 
 data "template_file" "vm-configs" {
-  for_each = toset(var.machines)
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
-
+  for_each = local.vm_instances
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")  
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
@@ -56,19 +66,19 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = toset(var.machines)
+  for_each = local.vm_instances
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = toset(var.machines)
+  for_each = local.vm_instances
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
   content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = toset(var.machines)
+  for_each       = local.vm_instances
   name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
@@ -76,11 +86,11 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "machine" {
-  for_each = toset(var.machines)
+  for_each = local.vm_instances
 
   name   = each.key
-  vcpu   = var.virtual_cpus
-  memory = var.virtual_memory
+  vcpu   = each.value.cpus
+  memory = each.value.memory * 1024
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -97,9 +107,6 @@ resource "libvirt_domain" "machine" {
     type        = "vnc"
     listen_type = "address"
   }
-
-  # Update to a non-deprecated machine type
-  machine = "q35"
 }
 
 output "ip_addresses" {
