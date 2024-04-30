@@ -36,14 +36,14 @@ resource "libvirt_pool" "volumetmp" {
 
 locals {
   vm_instances = { for instance in flatten([
-      for vm_type, config in var.vm_count : [
-        for i in range(config.count) : {
-          name   = "${vm_type}${i + 1}"
-          cpus   = config.cpus
-          memory = config.memory
-        }
-      ]
-    ]) : instance.name => instance }
+    for vm_type, config in var.vm_count : [
+      for i in range(config.count) : {
+        name   = "${vm_type}${i + 1}"
+        cpus   = config.cpus
+        memory = config.memory
+      }
+    ]
+  ]) : instance.name => instance }
 }
 resource "libvirt_volume" "base" {
   for_each = local.vm_instances
@@ -55,7 +55,7 @@ resource "libvirt_volume" "base" {
 
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
-  template = file("${path.module}/configs/machine-${element(split("-", each.key), 0)}-config.yaml.tmpl")
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl", )
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
