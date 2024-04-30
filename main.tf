@@ -90,16 +90,10 @@ resource "libvirt_domain" "machine" {
   vcpu    = var.vm_count[split("-", each.key)[0]].cpus
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
   machine = "q35"
+
   cpu {
-    mode = "host-model"
-    features {
-      name   = "apic"
-      policy = "require"
-    }
-    features {
-      name   = "clflush"
-      policy = "require"
-    }
+    mode  = "host-model" // or "host-passthrough"
+    model = "Nehalem"    // if needed, specify a CPU model, otherwise omit this line
   }
   network_interface {
     network_id     = libvirt_network.kube_network.id
