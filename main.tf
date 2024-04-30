@@ -66,19 +66,19 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances  # use 'local' instead of 'locals'
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances  # use 'local' instead of 'locals'
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
   content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = locals.vm_instances
+  for_each       = local.vm_instances  # use 'local' instead of 'locals'
   name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
@@ -86,7 +86,7 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "machine" {
-  for_each = locals.vm_instances
+  for_each = local.vm_instances  # use 'local' instead of 'locals'
 
   name   = each.key
   vcpu   = each.value.cpus
@@ -108,7 +108,6 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
   }
 }
-
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
