@@ -45,7 +45,7 @@ locals {
 resource "libvirt_volume" "vm_disk" {
   for_each       = local.vm_instances # Asegúrate de usar 'local.' y no 'locals.'
   name           = "${each.key}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
+  base_volume_id = libvirt_volume.base.id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
