@@ -75,29 +75,13 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-# Define the libvirt_ignition resource
-resource "libvirt_ignition" "ignition" {
-  for_each = toset(var.vm_count)
-
-  name    = "${each.key}-ignition"
-  pool    = libvirt_pool.volumetmp.name
-  content = data.ct_config.vm-ignitions[each.key].rendered
-}
-
-# Define the libvirt_volume for vm disks
-resource "libvirt_volume" "vm_disk" {
-  for_each       = toset(var.vm_count)
-  name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
-  pool           = libvirt_pool.volumetmp.name
-  format         = "qcow2"
-}
-
 # Adjust ordering: Move data.template_file.vm-configs after locals.vm_instances
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
   template = file("${path.module}/configs/machine-${split("-", each.key)[0]}-config.yaml.tmpl")
+
+
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
@@ -108,14 +92,12 @@ data "template_file" "vm-configs" {
   }
 }
 
-# Define the ct_config data source
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
 
   content = each.value.rendered
 }
 
-# Define the output for ip addresses
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
