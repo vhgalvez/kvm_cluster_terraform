@@ -54,8 +54,8 @@ locals {
 }
 
 data "template_file" "vm-configs" {
-  for_each = toset(keys(local.vm_instances))
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+  for_each = local.vm_instances
+  template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys)
@@ -65,6 +65,7 @@ data "template_file" "vm-configs" {
     pretty_print = true
   }
 }
+
 
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
@@ -91,7 +92,7 @@ resource "libvirt_domain" "machine" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024  // Convert MB to KB
+  memory = each.value.memory * 1024 // Convert MB to KB
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -105,8 +106,8 @@ resource "libvirt_domain" "machine" {
   coreos_ignition = libvirt_ignition.ignition[each.key].id
 
   graphics {
-    type        = "vnc"
-    listen_type = "address"
+    type           = "vnc"
+    listen_type    = "address"
     listen_address = "0.0.0.0"
   }
 }
