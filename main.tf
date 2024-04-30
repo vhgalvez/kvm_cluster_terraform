@@ -92,8 +92,7 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-    mode  = "host-model" // or "host-passthrough"
-    model = "Nehalem"    // if needed, specify a CPU model, otherwise omit this line
+    mode = "host-model" # Utiliza el modelo de CPU del host
   }
   network_interface {
     network_id     = libvirt_network.kube_network.id
