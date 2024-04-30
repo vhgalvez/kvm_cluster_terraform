@@ -55,7 +55,7 @@ locals {
 
 data "template_file" "vm-configs" {
   for_each = toset(keys(local.vm_instances))
-  template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl", )
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys)
@@ -89,9 +89,9 @@ resource "libvirt_volume" "vm_disk" {
 resource "libvirt_domain" "machine" {
   for_each = local.vm_instances
 
-  name         = each.key
-  vcpu         = each.value.cpus
-  memory       = each.value.memory * 1024 // Convert MB to KB
+  name   = each.key
+  vcpu   = each.value.cpus
+  memory = each.value.memory * 1024 // Convert MB to KB
 
 
   network_interface {
