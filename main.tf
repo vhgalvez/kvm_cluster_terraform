@@ -40,21 +40,20 @@ resource "libvirt_volume" "base" {
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
-
 locals {
-  vm_instances = merge([
-    for vm_type, config in var.vm_count : {
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
-        type   = vm_type
-      }
-    }
-  ]...)
+  vm_instances = {
+    for vm_type, config in var.vm_count : 
+      for i in range(config.count) : 
+        "${vm_type}-${i + 1}" => {
+          cpus   = config.cpus
+          memory = config.memory
+          type   = vm_type
+        }
+  }
 }
 
 data "template_file" "vm-configs" {
-  for_each = toset(keys(local.vm_instances))
+  for_each = local.vm_instances
   template = file("${path.module}/configs/machine-${each.value.type}-config.yaml.tmpl")
 
   vars = {
