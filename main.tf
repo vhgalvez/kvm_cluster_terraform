@@ -50,10 +50,9 @@ resource "libvirt_volume" "base" {
   pool     = libvirt_pool.volumetmp.name
   format   = "qcow2"
 }
-
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
-  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
@@ -63,6 +62,7 @@ data "template_file" "vm-configs" {
     pretty_print = true
   }
 }
+
 
 data "ct_config" "vm-ignitions" {
   for_each = { for machine in local.machines : machine => {} }
