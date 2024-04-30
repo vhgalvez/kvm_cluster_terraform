@@ -91,7 +91,9 @@ resource "libvirt_domain" "machine" {
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 # Convert MB to KB
+  memory = each.value.memory * 1024
+
+  machine_type = "q35"  # Actualizar al tipo de máquina más reciente
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -105,12 +107,8 @@ resource "libvirt_domain" "machine" {
   coreos_ignition = libvirt_ignition.ignition[each.key].id
 
   graphics {
-    type           = "vnc"
-    listen_type    = "address"
+    type        = "vnc"
+    listen_type = "address"
     listen_address = "0.0.0.0"
   }
-}
-
-output "ip_addresses" {
-  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
