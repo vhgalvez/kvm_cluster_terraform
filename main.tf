@@ -34,21 +34,22 @@ resource "libvirt_pool" "volumetmp" {
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
-resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
-}
-
 locals {
   vm_instances = {
     for vm_type, config in var.vm_count : 
-      "${vm_type}-${config.count}" => {
+      for i in range(config.count) : "${vm_type}-${i + 1}" => {
         cpus   = config.cpus
         memory = config.memory
       }
   }
+}
+
+resource "libvirt_volume" "base" {
+  for_each = locals.vm_instances
+  name     = "${each.key}-base"
+  source   = var.base_image
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
 }
 
 data "template_file" "vm-configs" {
@@ -56,16 +57,16 @@ data "template_file" "vm-configs" {
   template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys)
-    name         = each.key
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict       = true
+    ssh_keys     = jsonencode(var.ssh_keys),
+    name         = each.key,
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
     pretty_print = true
   }
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = locals.vm_instances
+  for_each = data.template_file.vm-configs
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
@@ -73,13 +74,13 @@ resource "libvirt_ignition" "ignition" {
   for_each = locals.vm_instances
   name     = "${each.key}-ignition"
   pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  content  = each.value.rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
   for_each       = locals.vm_instances
   name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base.id
+  base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
@@ -107,6 +108,7 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
   }
 }
+
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
