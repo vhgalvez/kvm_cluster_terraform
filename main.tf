@@ -1,4 +1,3 @@
-# main.tf
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -21,11 +20,6 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
-# Move locals definition above resources that use it
-provider "libvirt" {
-  uri = "qemu:///system"
-}
-
 locals {
   vm_instances = merge([
     for k, v in var.vm_count : {
@@ -35,32 +29,6 @@ locals {
       }
     }
   ]...)
-}
-
-resource "libvirt_ignition" "ignition" {
-  for_each = local.vm_instances
-
-  name    = "${each.key}-ignition"
-  pool    = libvirt_pool.volumetmp.name
-  content = data.ct_config.vm-ignitions[each.key].rendered
-}
-
-resource "libvirt_volume" "vm_disk" {
-  for_each       = local.vm_instances
-  name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
-  pool           = libvirt_pool.volumetmp.name
-  format         = "qcow2"
-}
-
-# Define the libvirt_volume for vm disks
-resource "libvirt_volume" "vm_disk" {
-  for_each       = local.vm_instances # Fix here
-  name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
-  pool           = libvirt_pool.volumetmp.name
-  format         = "qcow2"
-}
 }
 
 resource "libvirt_network" "kube_network" {
@@ -105,25 +73,22 @@ resource "libvirt_domain" "vm" {
   }
 }
 
-# Define the libvirt_ignition resource
 resource "libvirt_ignition" "ignition" {
-  for_each = toset(keys(var.vm_count)) # Fix here
+  for_each = local.vm_instances
 
   name    = "${each.key}-ignition"
   pool    = libvirt_pool.volumetmp.name
   content = data.ct_config.vm-ignitions[each.key].rendered
 }
 
-# Define the libvirt_volume for vm disks
 resource "libvirt_volume" "vm_disk" {
-  for_each       = toset(keys(var.vm_count)) # Fix here
+  for_each       = local.vm_instances
   name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
 
-# Adjust ordering: Move data.template_file.vm-configs after locals.vm_instances
 data "template_file" "vm-configs" {
   for_each = local.vm_instances
 
@@ -138,14 +103,12 @@ data "template_file" "vm-configs" {
   }
 }
 
-# Define the ct_config data source
 data "ct_config" "vm-ignitions" {
   for_each = data.template_file.vm-configs
 
   content = each.value.rendered
 }
 
-# Define the output for ip addresses
 output "ip_addresses" {
   value = { for k, vm in libvirt_domain.vm : k => vm.network_interface[0].addresses[0] }
 }
