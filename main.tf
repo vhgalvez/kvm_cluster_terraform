@@ -30,7 +30,39 @@ locals {
         memory = v.memory
       }
     }
-  ]...)
+  ]...)# Define the libvirt_ignition resource
+resource "libvirt_ignition" "ignition" {
+  for_each = local.vm_instances # Fix here
+
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = data.ct_config.vm-ignitions[each.key].rendered
+}
+
+# Define the libvirt_volume for vm disks
+resource "libvirt_volume" "vm_disk" {
+  for_each       = local.vm_instances # Fix here
+  name           = "${each.key}-${var.cluster_name}.qcow2"
+  base_volume_id = libvirt_volume.base[each.key].id
+  pool           = libvirt_pool.volumetmp.name
+  format         = "qcow2"
+}# Define the libvirt_ignition resource
+resource "libvirt_ignition" "ignition" {
+  for_each = local.vm_instances # Fix here
+
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = data.ct_config.vm-ignitions[each.key].rendered
+}
+
+# Define the libvirt_volume for vm disks
+resource "libvirt_volume" "vm_disk" {
+  for_each       = local.vm_instances # Fix here
+  name           = "${each.key}-${var.cluster_name}.qcow2"
+  base_volume_id = libvirt_volume.base[each.key].id
+  pool           = libvirt_pool.volumetmp.name
+  format         = "qcow2"
+}
 }
 
 resource "libvirt_network" "kube_network" {
