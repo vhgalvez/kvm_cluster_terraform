@@ -89,7 +89,7 @@ resource "libvirt_domain" "machine" {
   name    = each.key
   vcpu    = var.vm_count[split("-", each.key)[0]].cpus
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
-  machine = "q35"
+  # machine = "q35"
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
