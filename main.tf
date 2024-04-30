@@ -35,13 +35,15 @@ resource "libvirt_pool" "volumetmp" {
 }
 
 locals {
-  vm_instances = {
+  vm_instances = merge([
     for vm_type, config in var.vm_count : 
-      for i in range(config.count) : "${vm_type}-${i + 1}" => {
-        cpus   = config.cpus
-        memory = config.memory
+      { for i in range(config.count) : 
+        "${vm_type}-${i + 1}" => {
+          cpus   = config.cpus,
+          memory = config.memory
+        }
       }
-  }
+  ]...)
 }
 
 resource "libvirt_volume" "base" {
@@ -66,7 +68,7 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = data.template_file.vm-configs
+  for_each = locals.vm_instances
   content  = data.template_file.vm-configs[each.key].rendered
 }
 
