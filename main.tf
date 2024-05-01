@@ -90,10 +90,9 @@ resource "libvirt_domain" "machine" {
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
   machine = "q35"
 
-  cpu {
-    mode  = "custom"  // Or "custom" with "model = 'Nehalem'"
-    model = "Nehalem"
-  }
+ cpu {
+  mode  = "custom"
+}
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
