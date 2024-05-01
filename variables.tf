@@ -1,3 +1,4 @@
+# variables.tf
 variable "base_image" {
   description = "Path to the base VM image"
   type        = string
