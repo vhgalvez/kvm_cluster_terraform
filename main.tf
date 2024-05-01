@@ -107,19 +107,6 @@ resource "libvirt_domain" "machine" {
   }
 }
 
-resource "null_resource" "image_upgrade" {
-  depends_on = [libvirt_volume.base]
-
-  for_each = { for machine in local.machines : machine => {} }
-
-  provisioner "local-exec" {
-    command = "sudo qemu-img amend -f qcow2 -o compat=3 /var/lib/libvirt/images/${var.cluster_name}/${each.key}-base.qcow2"
-    environment = {
-      PATH = "/usr/bin:/bin:/usr/sbin:/sbin"
-    }
-  }
-}
-
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
