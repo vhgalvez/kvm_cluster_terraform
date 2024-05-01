@@ -90,10 +90,6 @@ resource "libvirt_domain" "machine" {
   memory = var.vm_count[split("-", each.key)[0]].memory * 1024
 
   cpu {
-    mode = "host-model"
-  }
-
-  cpu {
     mode  = "host-model" # O usa "host-passthrough" si es posible
     model = "Nehalem"    # O usa un modelo más moderno compatible con tu entorno
   }
