@@ -75,7 +75,7 @@ resource "libvirt_volume" "vm_disk" {
   for_each = toset(var.vm_definitions)
 
   name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base[each.key].id
+  base_volume_id = libvirt_volume.base.id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
@@ -104,6 +104,6 @@ resource "libvirt_domain" "machine" {
   }
 }
 
-output "ip-addresses" {
-  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0 }
+output "ip_addresses" {
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
