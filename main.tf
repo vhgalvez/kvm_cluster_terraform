@@ -47,7 +47,7 @@ resource "libvirt_volume" "base" {
   name     = "${each.key}-base"
   source   = var.base_image
   pool     = libvirt_pool.volumetmp.name
-  format   = "qcow3"
+  format   = "qcow2"
 }
 
 data "template_file" "vm-configs" {
