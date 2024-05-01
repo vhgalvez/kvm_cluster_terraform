@@ -1,6 +1,5 @@
 terraform {
   required_version = ">= 0.13"
-
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
@@ -23,15 +22,6 @@ provider "libvirt" {
 
 provider "ct" {}
 
-variable "vm_definitions" {
-  description = "Map of virtual machine definitions"
-  type = map(object({
-    count  = number
-    cpus   = number
-    memory = number // Memory in MiB
-  }))
-}
-
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -48,6 +38,7 @@ resource "libvirt_volume" "base" {
   for_each = var.vm_definitions
 
   name   = "${each.key}-base"
+  source = var.base_image
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
@@ -60,24 +51,22 @@ data "template_file" "vm-configs" {
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
-    strict       = true,
-    pretty_print = true
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
   }
 }
 
 data "ct_config" "vm-ignitions" {
   for_each = var.vm_definitions
 
-  content  = data.template_file.vm-configs[each.key].rendered
+  content = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
   for_each = var.vm_definitions
 
-  name     = "${each.key}-ignition"
-  pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -90,16 +79,11 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = {
-    for key, val in var.vm_definitions :
-    key => val if val.count > 0
-  }
+  for_each = var.vm_definitions
 
-  count = each.value.count
-
-  name   = "${each.key}-${count.index}"
+  name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convert MiB to KiB for libvirt
+  memory = each.value.memory * 1024  # Convert MB to KB
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -119,9 +103,5 @@ resource "libvirt_domain" "vm" {
 }
 
 output "ip-addresses" {
-  value = {
-    for key, machine in libvirt_domain.vm :
-    key => machine.network_interface.0.addresses[0]
-    if length(machine.network_interface.0.addresses) > 0
-  }
+  value = { for key, machine in libvirt_domain.vm : key => machine.network_interface.0.addresses[0] }
 }
