@@ -75,3 +75,21 @@ Si la línea está presente, procede a aplicar los cambios ejecutando:
 css
 Copy code
 sudo sysctl -p
+
+
+El error que estás experimentando indica que el límite del espacio de direcciones físicas es demasiado bajo para que QEMU funcione correctamente. Parece que ya has abierto el archivo /etc/sysctl.conf y has agregado la línea vm.max_map_count = 262144.
+
+Sin embargo, el problema persiste. Parece que la advertencia "Address space limit 0xffffffffff < 0x2087fffffff phys-bits too low (40)" indica que el límite del espacio de direcciones físicas aún es insuficiente.
+
+Para resolver esto, necesitas aumentar el límite del espacio de direcciones físicas aún más. Puedes intentar agregar la siguiente línea al final del archivo /etc/sysctl.conf:
+
+Copy code
+vm.max_map_count = 655300
+Esta configuración debería aumentar significativamente el límite del espacio de direcciones físicas y resolver el error que estás experimentando.
+
+Después de hacer este cambio, guarda el archivo y recarga la configuración del kernel ejecutando:
+
+css
+Copy code
+sudo sysctl -p
+Una vez hecho esto, intenta ejecutar nuevamente tu proceso de creación de máquinas virtuales con QEMU para ver si el problema se ha resuelto.
