@@ -29,9 +29,9 @@ resource "libvirt_network" "kube_network" {
 }
 
 resource "libvirt_pool" "volumetmp" {
-  name = "vms"
+  name = var.cluster_name
   type = "dir"
-  path = "/var/lib/libvirt/images"
+  path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
 resource "libvirt_volume" "base" {
@@ -51,7 +51,9 @@ data "template_file" "vm-configs" {
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
+    pretty_print = true
   }
 }
 
@@ -78,12 +80,12 @@ resource "libvirt_volume" "vm_disk" {
   format         = "qcow2"
 }
 
-resource "libvirt_domain" "vm" {
+resource "libvirt_domain" "machine" {
   for_each = var.vm_definitions
 
   name   = each.key
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024  # Convert MB to KB
+  memory = each.value.memory
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -103,5 +105,7 @@ resource "libvirt_domain" "vm" {
 }
 
 output "ip-addresses" {
-  value = { for key, machine in libvirt_domain.vm : key => machine.network_interface.0.addresses[0] }
+  value = {
+    for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0
+  }
 }
