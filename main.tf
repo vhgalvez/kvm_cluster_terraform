@@ -91,8 +91,8 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
  cpu {
-    mode = "custom"
-    model = "host-passthrough"  # Or specify a specific CPU model that supports more physical address bits
+    mode  = "custom"
+    model = "Nehalem"  # Replace with 'Nehalem' or any other specific model compatible with your QEMU version
   }
   network_interface {
     network_id     = libvirt_network.kube_network.id
