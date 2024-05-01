@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 0.13"
+
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
@@ -22,6 +23,15 @@ provider "libvirt" {
 
 provider "ct" {}
 
+variable "vm_definitions" {
+  description = "Map of virtual machine definitions"
+  type = map(object({
+    count  = number
+    cpus   = number
+    memory = number // Memory in MiB
+  }))
+}
+
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -29,73 +39,67 @@ resource "libvirt_network" "kube_network" {
 }
 
 resource "libvirt_pool" "volumetmp" {
-  name = var.cluster_name
+  name = "vms"
   type = "dir"
-  path = "/var/lib/libvirt/images/${var.cluster_name}"
+  path = "/var/lib/libvirt/images"
 }
 
 resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
+  for_each = var.vm_definitions
+
+  name   = "${each.key}-base"
   pool   = libvirt_pool.volumetmp.name
   format = "qcow2"
 }
 
-locals {
-  machines = flatten([
-    for vm_type, config in var.vm_definitions : [
-      for i in range(config.count) : "${vm_type}-${i + 1}"
-    ]
-  ])
-}
-
 data "template_file" "vm-configs" {
-  for_each = { for machine in local.machines : machine => {} }
+  for_each = var.vm_definitions
+
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys)
-    name         = each.key
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict       = true
+    ssh_keys     = jsonencode(var.ssh_keys),
+    name         = each.key,
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
     pretty_print = true
   }
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = { for machine in local.machines : machine => {} }
-  content  = data.template_file.vm-configs[each.key].rendered
+  for_each = var.vm_definitions
+
+  content = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
-  for_each = { for machine in local.machines : machine => {} }
-  name     = "${each.key}-ignition"
-  pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+  for_each = var.vm_definitions
+
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each       = { for machine in local.machines : machine => {} }
+  for_each = var.vm_definitions
+
   name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base.id
+  base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
 
-resource "libvirt_domain" "machine" {
-  for_each = { for machine in local.machines : machine => {
-    name   = machine
-    vcpu   = var.vm_definitions[split("-", machine)[0]].cpus
-    memory = var.vm_definitions[split("-", machine)[0]].memory * 1024
-  } }
-
-  name   = each.value.name
-  vcpu   = each.value.vcpu
-  memory = each.value.memory
-
-  cpu {
-    mode = "host-model" # or "host-passthrough" if "host-model" still causes issues
+resource "libvirt_domain" "vm" {
+  for_each = {
+    for key, val in var.vm_definitions :
+    key => val if val.count > 0
   }
+
+  count = each.value.count
+
+  name   = "${each.key}-${count.index}"
+  vcpu   = each.value.cpus
+  memory = each.value.memory * 1024 // Convert MiB to KiB for libvirt
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
@@ -114,10 +118,10 @@ resource "libvirt_domain" "machine" {
   }
 }
 
-
 output "ip-addresses" {
-  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0 }
+  value = {
+    for key, machine in libvirt_domain.vm :
+    key => machine.network_interface.0.addresses[0]
+    if length(machine.network_interface.0.addresses) > 0
+  }
 }
-
-
-
