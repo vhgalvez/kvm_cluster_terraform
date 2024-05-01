@@ -34,13 +34,6 @@ resource "libvirt_pool" "volumetmp" {
   path = "/var/lib/libvirt/images/${var.cluster_name}"
 }
 
-resource "libvirt_volume" "base" {
-  name   = "${var.cluster_name}-base"
-  source = var.base_image
-  pool   = libvirt_pool.volumetmp.name
-  format = "qcow2"
-}
-
 locals {
   machines = flatten([
     for vm_type, config in var.vm_count : [
@@ -49,15 +42,22 @@ locals {
   ])
 }
 
+resource "libvirt_volume" "base" {
+  for_each = { for machine in local.machines : machine => {} }
+  name     = "${each.key}-base"
+  source   = var.base_image
+  pool     = libvirt_pool.volumetmp.name
+  format   = "qcow2"
+}
+
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
-
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
   vars = {
-    ssh_keys     = jsonencode(var.ssh_keys)
-    name         = each.key
-    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}"
-    strict       = true
+    ssh_keys     = jsonencode(var.ssh_keys),
+    name         = each.key,
+    host_name    = "${each.key}.${var.cluster_name}.${var.cluster_domain}",
+    strict       = true,
     pretty_print = true
   }
 }
@@ -77,7 +77,7 @@ resource "libvirt_ignition" "ignition" {
 resource "libvirt_volume" "vm_disk" {
   for_each       = { for machine in local.machines : machine => {} }
   name           = "${each.key}-${var.cluster_name}.qcow2"
-  base_volume_id = libvirt_volume.base.id
+  base_volume_id = libvirt_volume.base[each.key].id
   pool           = libvirt_pool.volumetmp.name
   format         = "qcow2"
 }
@@ -85,10 +85,14 @@ resource "libvirt_volume" "vm_disk" {
 resource "libvirt_domain" "machine" {
   for_each = { for machine in local.machines : machine => {} }
 
-  name   = each.key
-  vcpu   = var.vm_count[split("-", each.key)[0]].cpus
-  memory = var.vm_count[split("-", each.key)[0]].memory * 1024
+  name    = each.key
+  vcpu    = var.vm_count[split("-", each.key)[0]].cpus
+  memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
+  machine = "q35"
 
+  cpu {
+    mode = "host-model"
+  }
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
@@ -106,6 +110,6 @@ resource "libvirt_domain" "machine" {
   }
 }
 
-output "ip-addresses" {
-  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0 }
+output "ip_addresses" {
+  value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
