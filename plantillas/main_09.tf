@@ -83,15 +83,16 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "machine" {
-  for_each = { for machine in local.machines : machine => {
-    name   = machine
-    vcpu   = var.vm_definitions[split("-", machine)[0]].cpus
-    memory = var.vm_definitions[split("-", machine)[0]].memory * 1024
-  } }
 
-  name   = each.value.name
-  vcpu   = each.value.vcpu
-  memory = each.value.memory
+  machine = "q35"
+
+  for_each = { for machine in local.machines : machine => {} }
+
+  name   = each.key
+  vcpu   = var.vm_count[split("-", each.key)[0]].cpus
+  memory = var.vm_count[split("-", each.key)[0]].memory * 1024
+
+
 
   cpu {
     mode = "host-model" # or "host-passthrough" if "host-model" still causes issues
@@ -114,10 +115,6 @@ resource "libvirt_domain" "machine" {
   }
 }
 
-
 output "ip-addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface.0.addresses[0] if length(machine.network_interface.0.addresses) > 0 }
 }
-
-
-

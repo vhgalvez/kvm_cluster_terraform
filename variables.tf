@@ -4,12 +4,11 @@ variable "base_image" {
   type        = string
 }
 
-variable "vm_count" {
-  description = "Map of VM types and their quantities, cpus, and memory"
+variable "vm_definitions" {
   type = map(object({
-    count : number
-    cpus : number
-    memory : number
+    count  = number
+    cpus   = number
+    memory = number
   }))
 }
 variable "cluster_name" {
@@ -29,5 +28,5 @@ variable "ssh_keys" {
 variable "machines" {
   description = "List of machines to create"
   type        = list(string)
-  default     = []  # This will be dynamically populated in the locals or directly in terraform.tfvars if required
+  default     = [] # This will be dynamically populated in the locals or directly in terraform.tfvars if required
 }
