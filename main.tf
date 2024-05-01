@@ -113,9 +113,9 @@ resource "null_resource" "image_upgrade" {
   for_each = { for machine in local.machines : machine => {} }
 
   provisioner "local-exec" {
-    command = "sudo qemu-img amend -f qcow2 -o compat=3 ${libvirt_volume.base[each.key].path}"
+    command = "sudo qemu-img amend -f qcow2 -o compat=3 /var/lib/libvirt/images/${var.cluster_name}/${each.key}-base.qcow2"
     environment = {
-      PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      PATH = "/usr/bin:/bin:/usr/sbin:/sbin"
     }
   }
 }
