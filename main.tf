@@ -43,7 +43,7 @@ resource "libvirt_volume" "base" {
 
 locals {
   machines = flatten([
-    for vm_type, config in var.vm_count : [
+    for vm_type, config in var.vm_definitions : [
       for i in range(config.count) : "${vm_type}-${i + 1}"
     ]
   ])
