@@ -91,8 +91,8 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-    mode  = "custom"
-    model = "Nehalem"
+    mode  = "custom"  # This sets it to use a custom model, which you must specify next.
+    model = "Nehalem" # This explicitly sets the CPU model to Nehalem.
   }
   network_interface {
     network_id     = libvirt_network.kube_network.id
