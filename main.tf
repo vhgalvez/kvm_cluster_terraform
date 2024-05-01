@@ -91,8 +91,9 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-    mode = "host-model" # Puedes cambiar esto a "custom" y usar "model = 'Nehalem'" si host-model no funciona
-  }
+  mode = "custom"
+  model = "Broadwell"
+}
 
   network_interface {
     network_id     = libvirt_network.kube_network.id

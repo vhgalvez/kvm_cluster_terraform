@@ -47,3 +47,6 @@ bash
 Copy code
 sudo dmesg | grep -i qemu
 sudo grep -i qemu /var/log/syslog  # En sistemas que usen syslog
+
+
+/usr/libexec/qemu-kvm -cpu help
