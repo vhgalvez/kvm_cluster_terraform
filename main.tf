@@ -91,7 +91,7 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-    mode = "custom"
+    mode  = "custom"
     model = "Nehalem"
   }
   network_interface {
