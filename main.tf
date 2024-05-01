@@ -95,7 +95,7 @@ resource "libvirt_domain" "machine" {
 
 
   cpu {
-    mode = "host-passthrough"
+    mode = "host-model" # or "host-passthrough" if "host-model" still causes issues
   }
 
   network_interface {
