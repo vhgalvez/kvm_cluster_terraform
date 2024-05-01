@@ -91,9 +91,9 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-  mode = "custom"
-  model = "Broadwell"
-}
+    mode  = "custom"
+    model = "Broadwell"
+  }
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
