@@ -91,7 +91,7 @@ resource "libvirt_domain" "machine" {
   machine = "q35"
 
   cpu {
-    mode = "Nehalem" # Puedes cambiar esto a "custom" y usar "model = 'Nehalem'" si host-model no funciona
+    mode = "host" # Puedes cambiar esto a "custom" y usar "model = 'Nehalem'" si host-model no funciona
   }
 
   network_interface {
