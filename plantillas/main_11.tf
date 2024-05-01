@@ -83,7 +83,7 @@ resource "libvirt_volume" "vm_disk" {
 resource "libvirt_domain" "vm" {
   for_each = var.vm_definitions
 
-  name   = each.key
+  name   = "${each.key}-${each.value.count}"
   vcpu   = each.value.cpus
   memory = each.value.memory
 
