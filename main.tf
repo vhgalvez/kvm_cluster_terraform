@@ -1,4 +1,3 @@
-# main.tf
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -91,9 +90,6 @@ resource "libvirt_domain" "machine" {
   memory  = var.vm_count[split("-", each.key)[0]].memory * 1024
   machine = "q35"
 
-  cpu {
-    mode = "host-passthrough"
-  }
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
@@ -111,7 +107,19 @@ resource "libvirt_domain" "machine" {
   }
 }
 
+resource "null_resource" "image_upgrade" {
+  depends_on = [libvirt_volume.base]
+
+  for_each = { for machine in local.machines : machine => {} }
+
+  provisioner "local-exec" {
+    command = "sudo qemu-img amend -f qcow2 -o compat=3 ${libvirt_volume.base[each.key].path}"
+    environment = {
+      PATH = "/usr/bin:${path.env}"
+    }
+  }
+}
+
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
 }
-
