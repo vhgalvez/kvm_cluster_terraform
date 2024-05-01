@@ -83,17 +83,19 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "machine" {
+
+  machine = "q35"
+
   for_each = { for machine in local.machines : machine => {} }
 
   name   = each.key
   vcpu   = var.vm_count[split("-", each.key)[0]].cpus
   memory = var.vm_count[split("-", each.key)[0]].memory * 1024
-  machine = "q35"
+
 
 
   cpu {
-    mode  = "host-model" # O usa "host-passthrough" si es posible
-    # model = "Nehalem"    # O usa un modelo más moderno compatible con tu entorno
+    mode = "host-passthrough"
   }
 
   network_interface {
