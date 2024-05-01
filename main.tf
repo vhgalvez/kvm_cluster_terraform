@@ -93,6 +93,11 @@ resource "libvirt_domain" "machine" {
     mode = "host-model"
   }
 
+  cpu {
+    mode = "host-passthrough" # O usa "host-passthrough" si es posible
+    # model = "Nehalem"  # O usa un modelo más moderno compatible con tu entorno
+  }
+
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
