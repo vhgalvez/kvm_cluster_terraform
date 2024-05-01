@@ -2,8 +2,8 @@
 base_image = "/var/lib/libvirt/images/flatcar_image/flatcar_image/flatcar_production_qemu_image.img"
 vm_definitions = {
   "bootstrap1"     = { count = 1, cpus = 1, memory = 1024 },
-  "master1"         = { count = 3, cpus = 2, memory = 2048 },
-  "worker1"         = { count = 3, cpus = 2, memory = 2048 },
+  "master1"        = { count = 3, cpus = 2, memory = 2048 },
+  "worker1"        = { count = 3, cpus = 2, memory = 2048 },
   "freeipa1"       = { count = 1, cpus = 1, memory = 1024 },
   "load_balancer1" = { count = 1, cpus = 1, memory = 1024 },
   "nfs1"           = { count = 1, cpus = 1, memory = 1024 },
