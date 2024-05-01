@@ -6,7 +6,6 @@ variable "base_image" {
 
 variable "vm_definitions" {
   type = map(object({
-    count  = number
     cpus   = number
     memory = number
   }))
