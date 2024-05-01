@@ -88,6 +88,8 @@ resource "libvirt_domain" "machine" {
   name   = each.key
   vcpu   = var.vm_count[split("-", each.key)[0]].cpus
   memory = var.vm_count[split("-", each.key)[0]].memory * 1024
+  machine = "q35"
+
 
   cpu {
     mode  = "host-model" # O usa "host-passthrough" si es posible
