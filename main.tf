@@ -115,7 +115,7 @@ resource "null_resource" "image_upgrade" {
   provisioner "local-exec" {
     command = "sudo qemu-img amend -f qcow2 -o compat=3 ${libvirt_volume.base[each.key].path}"
     environment = {
-      PATH = "/usr/bin:${path.env}"
+      PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     }
   }
 }
