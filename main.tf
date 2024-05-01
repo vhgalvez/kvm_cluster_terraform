@@ -23,6 +23,15 @@ provider "libvirt" {
 
 provider "ct" {}
 
+variable "vm_definitions" {
+  description = "Map of virtual machine definitions"
+  type = map(object({
+    count  = number
+    cpus   = number
+    memory = number // Memory in MiB
+  }))
+}
+
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
@@ -60,15 +69,15 @@ data "template_file" "vm-configs" {
 data "ct_config" "vm-ignitions" {
   for_each = var.vm_definitions
 
-  content = data.template_file.vm-configs[each.key].rendered
+  content  = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
   for_each = var.vm_definitions
 
-  name    = "${each.key}-ignition"
-  pool    = libvirt_pool.volumetmp.name
-  content = data.ct_config.vm-ignitions[each.key].rendered
+  name     = "${each.key}-ignition"
+  pool     = libvirt_pool.volumetmp.name
+  content  = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
@@ -81,11 +90,16 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = var.vm_definitions
+  for_each = {
+    for key, val in var.vm_definitions :
+    key => val if val.count > 0
+  }
 
-  name   = each.key
+  count = each.value.count
+
+  name   = "${each.key}-${count.index}"
   vcpu   = each.value.cpus
-  memory = each.value.memory
+  memory = each.value.memory * 1024 // Convert MiB to KiB for libvirt
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
