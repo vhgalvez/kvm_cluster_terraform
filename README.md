@@ -50,3 +50,28 @@ sudo grep -i qemu /var/log/syslog  # En sistemas que usen syslog
 
 
 /usr/libexec/qemu-kvm -cpu help
+
+
+Parece que has abierto el archivo /etc/sysctl.conf con el comando nano, pero no has agregado la línea necesaria para aumentar el límite del espacio de direcciones físicas.
+
+Aquí tienes los pasos nuevamente:
+
+Abre el archivo /etc/sysctl.conf con el editor de texto nano:
+bash
+Copy code
+sudo nano /etc/sysctl.conf
+Agrega la siguiente línea al final del archivo:
+Copy code
+vm.max_map_count = 262144
+Esto aumentará el límite del espacio de direcciones físicas.
+Guarda los cambios y cierra el archivo.
+Una vez hecho esto, puedes verificar que la línea se haya agregado correctamente ejecutando:
+
+bash
+Copy code
+sudo cat /etc/sysctl.conf
+Si la línea está presente, procede a aplicar los cambios ejecutando:
+
+css
+Copy code
+sudo sysctl -p
