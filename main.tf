@@ -51,7 +51,7 @@ locals {
 
 data "template_file" "vm-configs" {
   for_each = { for machine in local.machines : machine => {} }
-  template = file("${path.module}/configs/${each.key}-config.yaml.tmpl")
+  template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys)
