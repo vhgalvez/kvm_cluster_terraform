@@ -91,7 +91,7 @@ resource "libvirt_domain" "machine" {
 
   cpu {
     mode  = "host-model" # O usa "host-passthrough" si es posible
-    model = "Nehalem"    # O usa un modelo más moderno compatible con tu entorno
+    # model = "Nehalem"    # O usa un modelo más moderno compatible con tu entorno
   }
 
   network_interface {
