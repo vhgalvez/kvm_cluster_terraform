@@ -23,15 +23,6 @@ provider "libvirt" {
 
 provider "ct" {}
 
-variable "vm_definitions" {
-  description = "Map of virtual machine definitions"
-  type = map(object({
-    count  = number
-    cpus   = number
-    memory = number // Memory in MiB
-  }))
-}
-
 resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
