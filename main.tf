@@ -90,16 +90,11 @@ resource "libvirt_volume" "vm_disk" {
 }
 
 resource "libvirt_domain" "vm" {
-  for_each = {
-    for key, val in var.vm_definitions :
-    key => val if val.count > 0
-  }
+  for_each = var.vm_definitions
 
-  count = each.value.count
-
-  name   = "${each.key}-${count.index}"
+  name   = "${each.key}-${each.value.count}"
   vcpu   = each.value.cpus
-  memory = each.value.memory * 1024 // Convert MiB to KiB for libvirt
+  memory = each.value.memory
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
