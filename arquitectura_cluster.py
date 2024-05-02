@@ -1,10 +1,8 @@
 from diagrams import Cluster, Diagram
 from diagrams.onprem.compute import Server
-from diagrams.onprem.network import Openvswitch
 from diagrams.onprem.client import User
 from diagrams.onprem.inmemory import Redis
 from diagrams.onprem.monitoring import Grafana, Prometheus
-from diagrams.onprem.security import Freeipa
 
 with Diagram(name="Clúster OpenShift", show=False):
     with Cluster("Servidor ProLiant DL380 (Rocky Linux)"):
@@ -17,24 +15,17 @@ with Diagram(name="Clúster OpenShift", show=False):
 
         with Cluster("Servicios de Red"):
             vpn = User("VPN (Bastion1)")
-            ovs = Openvswitch("Open vSwitch")
-            ovs - vpn
+            # Assuming Router or Network is not available, we will not visualize this component
+            vpn - bootstrap  # Direct connection for illustration
 
         with Cluster("Monitoreo"):
             prometheus = Prometheus("Prometheus")
             grafana = Grafana("Grafana")
             prometheus >> grafana
 
-        with Cluster("Servicios Adicionales"):
-            freeipa = Freeipa("FreeIPA")
-            lb = Server("Load Balancer")
-            freeipa - lb
-
         redis = Redis("Base de Datos Redis (Session HA)")
 
         # Conexiones
-        ovs >> bootstrap
         vpn >> [master, worker]
-        lb >> [master, worker]
         redis >> [master, worker]
         prometheus >> worker

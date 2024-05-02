@@ -1,0 +1,21 @@
+digraph "Clúster OpenShift" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Clúster OpenShift" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"64f4708df6a449a5bd48b1cf4794bc05" -> a2a629f056304335a631b973722324f6 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"64f4708df6a449a5bd48b1cf4794bc05" -> "48e711624db1437a8f0f02a88eb0d4b5" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"64f4708df6a449a5bd48b1cf4794bc05" -> a8357bbe265d41bd9f3c02be071acd32 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Servidor ProLiant DL380 (Rocky Linux)" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Servidor ProLiant DL380 (Rocky Linux)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_Nodos OpenShift" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Nodos OpenShift" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"64f4708df6a449a5bd48b1cf4794bc05" [label=Bootstrap height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			a2a629f056304335a631b973722324f6 [label="Master 1" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			"48e711624db1437a8f0f02a88eb0d4b5" [label="Master 2" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			a8357bbe265d41bd9f3c02be071acd32 [label="Master 3" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			"6bcf1c490fb64321975d1b9d712ee4ee" [label="Worker 1" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			dbcf71cc3be44f92a63fa3678409f87c [label="Worker 2" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+			"9668b63a053746f191714e956a6f834b" [label="Worker 3" height=1.9 image="C:\Users\vhgal\Documents\desarrollo\IaC\flatcar\kvm_cluster_terraform\arquitectura_cluster\Lib\site-packages\resources/onprem/compute\server.png" shape=none]
+		}
+	}
+}
