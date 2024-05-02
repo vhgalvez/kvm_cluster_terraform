@@ -11,11 +11,13 @@ with Diagram(name="Clúster OpenShift", show=False):
             master = [Server(f"Master {i+1}") for i in range(3)]
             worker = [Server(f"Worker {i+1}") for i in range(3)]
 
-            bootstrap >> master >> worker
+            for m in master:
+                bootstrap >> m
+                for w in worker:
+                    m >> w
 
         with Cluster("Servicios de Red"):
             vpn = User("VPN (Bastion1)")
-            # Assuming Router or Network is not available, we will not visualize this component
             vpn - bootstrap  # Direct connection for illustration
 
         with Cluster("Monitoreo"):
@@ -26,6 +28,6 @@ with Diagram(name="Clúster OpenShift", show=False):
         redis = Redis("Base de Datos Redis (Session HA)")
 
         # Conexiones
-        vpn >> [master, worker]
-        redis >> [master, worker]
+        vpn >> [bootstrap] + master + worker
+        redis >> [bootstrap] + master + worker
         prometheus >> worker
