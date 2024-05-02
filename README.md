@@ -64,6 +64,118 @@ Utilizar Ansible para la automatización de configuraciones y manejo eficiente d
 Este documento no solo guía la implementación técnica sino que también enfatiza la importancia de una gestión sistemática y una operación eficiente y segura del clúster OpenShift, proporcionando un entorno robusto y escalable para aplicaciones empresariales.
 
 
+
+# kvm_cluster_terraform
+
+Este documento proporciona instrucciones detalladas para la gestión y solución de problemas en un clúster de KVM gestionado con Terraform.
+
+## Eliminar las VMs
+
+Para eliminar las máquinas virtuales, debes hacer ejecutable el script `eliminar_vms.sh` y luego ejecutarlo:
+
+```bash
+chmod +x eliminar_vms.sh
+./eliminar_vms.sh
+```
+
+
+
+# Gestión de Memoria
+
+Para permitir el sobrecompromiso de memoria, que puede ser necesario en entornos de virtualización densa, ajusta el parámetro `vm.overcommit_memory`:
+
+```bash
+sysctl vm.overcommit_memory=1
+```
+
+
+
+
+
+
+#  Administración del Servicio Libvirt
+Verificar el Estado del Servicio Libvirt
+Para comprobar el estado del servicio Libvirt y asegurarte de que está activo y funcionando, usa:
+
+```bash
+sudo systemctl status libvirtd
+```
+Reiniciar el Servicio Libvirt
+Un reinicio puede solucionar problemas transitorios con el servicio Libvirt:
+
+bash
+Copy code
+sudo systemctl restart libvirtd
+Revisar la Configuración de Registro (Logging)
+Es importante asegurarse de que la configuración de registros de Libvirt esté adecuada para capturar detalles necesarios. Revisa y ajusta la configuración en /etc/libvirt/libvirtd.conf:
+
+conf
+Copy code
+log_level = 3
+log_outputs = "1:file:/var/log/libvirt/libvirtd.log"
+Después de hacer cambios, reinicia el servicio para que los ajustes tengan efecto.
+
+Verificar Logs Alternativos
+Si los registros del servicio Libvirt no están disponibles a través de journalctl, revisa directamente los archivos de registro:
+
+bash
+Copy code
+sudo cat /var/log/libvirt/libvirtd.log
+Buscar Errores en Logs del Sistema
+Además de los logs de Libvirt, revisa los logs generales del sistema para cualquier mensaje relacionado con Libvirt o QEMU:
+
+bash
+Copy code
+sudo dmesg | grep -i qemu
+sudo grep -i qemu /var/log/syslog  # En sistemas que usen syslog
+Aumentar el Límite del Espacio de Direcciones Físicas
+Para resolver problemas con el límite del espacio de direcciones físicas en QEMU, especialmente cuando se encuentra demasiado bajo, realiza los siguientes pasos:
+
+Abre el archivo /etc/sysctl.conf con un editor de texto como nano:
+bash
+Copy code
+sudo nano /etc/sysctl.conf
+Agrega la siguiente línea al final del archivo para aumentar el límite:
+conf
+Copy code
+vm.max_map_count = 262144
+Guarda los cambios y cierra el archivo. Verifica que la línea se haya agregado correctamente:
+bash
+Copy code
+sudo cat /etc/sysctl.conf
+Aplica los cambios:
+css
+Copy code
+sudo sysctl -p
+Si el problema persiste y se necesita un límite aún mayor, considera ajustar vm.max_map_count a un valor más alto, como 655300, para resolver definitivamente el problema.
+
+Comandos Útiles
+Ver ayuda de CPU con QEMU:
+bash
+Copy code
+/usr/libexec/qemu-kvm -cpu help
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # kvm_cluster_terraform
  kvm_cluster_terraform
 
