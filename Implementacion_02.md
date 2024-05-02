@@ -69,6 +69,22 @@ Este documento es una guía completa para implementar un clúster OpenShift robu
 | Elasticsearch   | 2    | 2048         | Análisis de logs          |
 | Kibana          | 1    | 1024         | Visualización de datos    |
 
+
+| Característica   | Especificación                       |
+|------------------|--------------------------------------|
+| OS               | Rocky Linux 9.3 (Blue Onyx) x86_64   |
+| Host             | ProLiant DL380 G7                    |
+| Kernel           | 5.14.0-362.24.1.el9_3.0.1.x86_64     |
+| Uptime           | 14 mins                                 |
+| Packages         | 1235 (rpm)                             |
+| Shell            | bash 5.1.8                             |
+| Resolution       | 1024x768                               |
+| Terminal         | /dev/pts/0                             |
+| CPU              | Intel Xeon X5650 (24) @ 2.666GHz       |
+| GPU              | AMD ATI 01:03.0 ES1000                 |
+| Memory           | 1093MiB / 35904MiB                     |
+
+
 ## Resumen
 
 Este documento detalla cada fase necesaria para configurar un clúster OpenShift, desde la preparación del entorno hasta la automatización avanzada y el monitoreo. La estructura propuesta asegura una implementación técnica precisa y una operación segura y eficiente, proporcionando un entorno robusto y escalable para aplicaciones empresariales.
