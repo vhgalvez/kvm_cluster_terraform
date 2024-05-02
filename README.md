@@ -83,6 +83,57 @@ Este documento no solo guía la implementación técnica sino que también enfat
 
 
 
+
+
+# Clúster OpenShift
+
+## Servidor: ProLiant DL380 G7 (Rocky Linux)
+
+- **Open vSwitch**
+  - Gestiona DHCP
+  - Provee NAT
+
+- **VPN (Bastion1)**
+  - IP Pública Asignada
+
+- **Firewall**
+  - Protege VMs y servicios
+
+- **Terraform**
+  - Configura redes VMs
+  - Provisión de recursos
+
+- **Ansible**
+  - Automatización
+  - Configuración
+
+- **Monitoreo y Gestión del Rendimiento**
+  - **Prometheus**
+    - Monitoreo de Métricas
+  - **Grafana**
+    - Visualización de Métricas
+  - **cAdvisor**
+    - Rendimiento de Contenedores
+
+## Nodos OpenShift
+
+- Bootstrap
+- Master
+- Worker
+
+## Servicios Adicionales
+
+- **FreeIPA (Gestión de Identidades)**
+- **Load Balancer**
+
+
+
+
+
+
+
+
+
 +-----------------------------------------------------------------+
 |                        Clúster OpenShift                        |
 +-----------------------------------------------------------------+
