@@ -83,6 +83,42 @@ Este documento no solo guía la implementación técnica sino que también enfat
 
 
 
+# Arquitectura de Red y Seguridad
+
+## 1. Configuración de Red Virtualizada con Open vSwitch:
+**Propósito:** Implementar una red virtualizada robusta que soporte las operaciones del clúster con eficiencia y seguridad.
+**Implementación:** Utilizar Open vSwitch para gestionar la red virtual dentro del clúster. Esto incluye la configuración de segmentos de red y reglas para el tráfico entre máquinas virtuales, así como la integración con sistemas externos mediante enrutamiento dinámico o estático.
+
+## 2. Automatización con Terraform:
+**Objetivo:** Automatizar la creación y configuración de la infraestructura de red necesaria para el clúster.
+**Especificaciones:** Utilizar Terraform para definir y desplegar configuraciones de red como parte del código de infraestructura, asegurando una replicación fácil y un manejo de configuración coherente.
+
+## 3. Seguridad y Aislamiento de Red:
+### VPN y Firewall:
+- **VPN (Bastion1):** Configurar un servidor VPN usando Bastion con una IP pública asignada. Esto facilita un acceso seguro y controlado al clúster para administración y operaciones.
+- **Firewall:** Establecer y mantener un sistema de firewall robusto que proteja contra accesos no autorizados y regule el tráfico hacia y desde el clúster.
+- **FreeIPA (freeipa1):** Implementar FreeIPA para la gestión de identidades y políticas de seguridad dentro del clúster, ofreciendo un control centralizado sobre autenticaciones y accesos.
+
+## 4. Almacenamiento y Gestión de Datos:
+### Sistemas de Almacenamiento (NFS y PostgreSQL):
+- **NFS (nfs1):** Proporcionar un sistema de almacenamiento de archivos para datos que requieren alta disponibilidad y acceso rápido.
+- **PostgreSQL (postgresql1):** Gestionar bases de datos críticas para el clúster, proporcionando almacenamiento persistente y transaccional para aplicaciones y servicios del clúster.
+
+## 5. Monitoreo y Alertas:
+### Integración de Prometheus y Grafana:
+- **Prometheus:** Configurar Prometheus para monitorear continuamente la salud y el rendimiento del clúster, recolectando métricas en tiempo real.
+- **Grafana:** Usar Grafana para visualizar las métricas recogidas, facilitando análisis y toma de decisiones rápidas y fundadas.
+- **cAdvisor:** Implementar cAdvisor para monitorear el uso de recursos y el rendimiento de los contenedores en el clúster, optimizando la gestión y despliegue de recursos.
+
+## 6. Automatización de Operaciones con Ansible:
+- **Playbooks de Ansible:** Desarrollar y ejecutar playbooks para automatizar la configuración y el mantenimiento del clúster, desde la instalación inicial hasta las actualizaciones y manejo de incidentes.
+
+# Resumen de la Configuración del Clúster
+**Nodos del Clúster:** Definir la configuración de hardware y software de los nodos Bootstrap, Master y Worker, cada uno con roles específicos y configuraciones optimizadas para soportar las demandas del clúster.
+**Servicios Adicionales:** Detallar los servicios adicionales como balanceadores de carga y elasticsearch para mejorar la escalabilidad y la capacidad de respuesta del sistema.
+
+Este enfoque estructurado asegura que todos los aspectos de la red y la seguridad están adecuadamente planificados y documentados, proporcionando una base sólida para la implementación exitosa del clúster OpenShift. Este documento debe servir como una guía clara para los equipos de infraestructura en la implementación y mantenimiento del clúster, asegurando que todos los componentes trabajen de manera cohesiva y segura.
+
 
 
 # Clúster OpenShift
