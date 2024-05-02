@@ -64,6 +64,23 @@ Utilizar Ansible para la automatización de configuraciones y manejo eficiente d
 Este documento no solo guía la implementación técnica sino que también enfatiza la importancia de una gestión sistemática y una operación eficiente y segura del clúster OpenShift, proporcionando un entorno robusto y escalable para aplicaciones empresariales.
 
 
+| Node Name         | CPUs | Memory (MB) |
+|-------------------|------|-------------|
+| bootstrap1        | 1    | 1024        |
+| master1           | 2    | 2048        |
+| master2           | 2    | 2048        |
+| master3           | 2    | 2048        |
+| worker1           | 2    | 2048        |
+| worker2           | 2    | 2048        |
+| worker3           | 2    | 2048        |
+| freeipa1          | 1    | 1024        |
+| load_balancer1    | 1    | 1024        |
+| nfs1              | 1    | 1024        |
+| postgresql1       | 1    | 1024        |
+| bastion1          | 1    | 1024        |
+| elasticsearch1    | 2    | 2048        |
+| kibana1           | 1    | 1024        |
+
 
 # kvm_cluster_terraform
 
