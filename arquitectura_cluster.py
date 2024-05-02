@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from diagrams import Cluster, Diagram
 from diagrams.onprem.compute import Server
 from diagrams.onprem.client import User
