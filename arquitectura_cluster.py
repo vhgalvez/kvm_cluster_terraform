@@ -7,6 +7,7 @@ from diagrams.onprem.network import Openvswitch
 from diagrams.onprem.security import Freeipa
 from diagrams.onprem.database import Postgresql
 
+
 with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
     with Cluster("Data Center Infrastructure"):
         # Define the physical server hosting the cluster
@@ -43,7 +44,7 @@ with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
             with Cluster("Servicios Adicionales"):
                 freeipa = Freeipa("FreeIPA")
                 load_balancer = Server("Load Balancer")
-                nfs = Server("NFS Server")
+                nfs = Server("NFS Server DNS")
                 db = Postgresql("PostgreSQL Database")
 
                 # Interconnections between additional services
@@ -69,3 +70,6 @@ with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
 
             # Monitoring with Prometheus applied to all workers
             prometheus >> workers
+            
+            
+
