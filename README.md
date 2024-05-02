@@ -80,4 +80,51 @@ Este documento no solo guía la implementación técnica sino que también enfat
 | bastion1          | 1    | 1024        |
 | elasticsearch1    | 2    | 2048        |
 | kibana1           | 1    | 1024        |
-| logstash1         | 1    | 1024        |
+
+
+
++-----------------------------------------------------------------+
+|                        Clúster OpenShift                        |
++-----------------------------------------------------------------+
+| Servidor: ProLiant DL380 G7 (Rocky Linux)                       |
+|    +---------------------------+                                |
+|    | Open vSwitch              |----+                          |
+|    |  - Gestiona DHCP          |    |                          |
+|    |  - Provee NAT             |    |                          |
+|    +---------------------------+    |                          |
+|                                     |                          |
+|    +---------------------------+    |                          |
+|    | VPN (Bastion1)            |    |                          |
+|    |  - IP Pública Asignada    |<---+                          |
+|    +---------------------------+                                |
+|                                                                 |
+|    +---------------------------+                                |
+|    | Firewall                  |                                |
+|    |  - Protege VMs y servicios|                                |
+|    +---------------------------+                                |
+|                                                                 |
+|    +---------------------------+     +----------------------+   |
+|    | Terraform                |     | Ansible              |   |
+|    |  - Configura redes VMs   |     |  - Automatización    |   |
+|    |  - Provisión de recursos |     |  - Configuración     |   |
+|    +---------------------------+     +----------------------+   |
+|                                                                 |
+|    +----------------+  +------------+  +-----------------+      |
+|    | Prometheus     |  | Grafana     |  | cAdvisor        |      |
+|    | - Monitoreo    |  | - Visualiza |  | - Rendimiento   |      |
+|    |   Métricas     |  |   Métricas  |  |   Contenedores  |      |
+|    +----------------+  +------------+  +-----------------+      |
+|                                                                 |
+|    +---------------------------+                                |
+|    | Nodos OpenShift           |                                |
+|    | - Bootstrap               |                                |
+|    | - Master                  |                                |
+|    | - Worker                  |                                |
+|    +---------------------------+                                |
+|                                                                 |
+|    +---------------------------+                                |
+|    | Servicios Adicionales     |                                |
+|    | - FreeIPA (Identidades)   |                                |
+|    | - Load Balancer           |                                |
+|    +---------------------------+                                |
++-----------------------------------------------------------------+
