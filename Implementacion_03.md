@@ -80,5 +80,6 @@ resource "libvirt_network" "kube_network" {
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
 }
+```
 
 ![cluster_architecture](detailed_cluster_architecture.png)
