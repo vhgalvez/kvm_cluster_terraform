@@ -1,4 +1,3 @@
-# main.tf
 terraform {
   required_version = ">= 0.13"
 
@@ -28,15 +27,6 @@ resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
-
-  dns {
-    enabled    = true
-    local_only = true
-  }
-
-  dhcp {
-    enabled = false
-  }
 }
 
 resource "libvirt_pool" "volumetmp" {
@@ -53,7 +43,7 @@ resource "libvirt_volume" "base" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = var.vm_definitions # Use the direct map
+  for_each = var.vm_definitions
 
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
@@ -67,7 +57,7 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = var.vm_definitions # Use the direct map
+  for_each = var.vm_definitions
 
   content = data.template_file.vm-configs[each.key].rendered
 }
@@ -99,7 +89,7 @@ resource "libvirt_domain" "machine" {
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
-    addresses      = [cidrhost("10.17.3.0/24", 10 + each.index)] # Assign static IP within a defined range
+    addresses      = [each.value.ip]  # Use the IP address specified in vm_definitions
   }
 
   disk {
