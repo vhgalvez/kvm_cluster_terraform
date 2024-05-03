@@ -399,7 +399,7 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 This configuration provides a detailed view of the system setup, ensuring all elements are concisely documented for effective cluster management.
 
 
-# Documento Técnico: Configuración de Máquinas Virtuales en CEFAS Local Server
+# Configuración de Máquinas Virtuales en CEFAS Local Server
 ## Red NAT con IPs Fijas y Nombres de Dominio Asignados
 
 | Máquina          | CPU (cores) | Memoria (MB) | IP          | Dominio                               |
