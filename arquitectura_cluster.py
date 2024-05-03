@@ -3,73 +3,48 @@ from diagrams.onprem.compute import Server
 from diagrams.onprem.client import User
 from diagrams.onprem.inmemory import Redis
 from diagrams.onprem.monitoring import Grafana, Prometheus
-from diagrams.onprem.network import Openvswitch
-from diagrams.onprem.security import Freeipa
-from diagrams.onprem.database import Postgresql
-
+from diagrams.generic.os import RedHat
+from diagrams.onprem.database import PostgreSQL
+from diagrams.onprem.network import Nginx
+from diagrams.onprem.queue import Kafka
 
 with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
     with Cluster("Data Center Infrastructure"):
-        # Define the physical server hosting the cluster
         with Cluster("Servidor ProLiant DL380 (Rocky Linux)"):
-            # Node setup for OpenShift
             with Cluster("Nodos OpenShift"):
                 bootstrap = Server("Bootstrap Node")
                 masters = [Server(f"Master Node {i+1}") for i in range(3)]
                 workers = [Server(f"Worker Node {i+1}") for i in range(3)]
                 
-                # Connect bootstrap to all masters, then masters to all workers
+                bootstrap >> masters
                 for master in masters:
-                    bootstrap >> master
-                    for worker in workers:
-                        master >> worker
+                    master >> workers
 
-            # Network services including VPN and Open vSwitch
             with Cluster("Servicios de Red"):
                 vpn = User("VPN (Bastion1)")
-                ovs = Openvswitch("Open vSwitch")
+                ovs = RedHat("Open vSwitch")
+                vpn >> ovs
+                ovs >> bootstrap
 
-                # VPN connected to Open vSwitch, which in turn connects to bootstrap node
-                vpn >> ovs >> bootstrap
-
-            # Monitoring setup with Prometheus and Grafana
             with Cluster("Monitoreo"):
                 prometheus = Prometheus("Prometheus")
                 grafana = Grafana("Grafana")
-
-                # Data flow from Prometheus to Grafana
                 prometheus >> grafana
 
-            # Additional essential services like FreeIPA, Load Balancer, NFS, and PostgreSQL
             with Cluster("Servicios Adicionales"):
-                freeipa = Freeipa("FreeIPA")
+                freeipa = RedHat("FreeIPA")
                 load_balancer = Server("Load Balancer")
-                nfs = Server("NFS Server DNS")
-                db = Postgresql("PostgreSQL Database")
+                nfs = Server("NFS Server")
+                db = PostgreSQL("PostgreSQL Database")
 
-                # Interconnections between additional services
                 freeipa >> load_balancer
                 nfs >> load_balancer
                 db >> load_balancer
 
-            # Redis setup for session high availability
             redis = Redis("Base de Datos Redis (Session HA)")
-
-            # General connections
-            # VPN provides direct access to all nodes
-            vpn >> masters
-            vpn >> workers
-
-            # Load balancer distributes load across all masters and workers
-            load_balancer >> masters
-            load_balancer >> workers
-
-            # Redis provides database services to all nodes
             redis >> masters
             redis >> workers
 
-            # Monitoring with Prometheus applied to all workers
+            vpn >> [masters, workers]
+            load_balancer >> [masters, workers]
             prometheus >> workers
-            
-            
-
