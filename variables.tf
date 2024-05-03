@@ -9,6 +9,8 @@ variable "vm_definitions" {
   type = map(object({
     cpus   = number
     memory = number
+    ip     = string
+
   }))
 }
 
@@ -25,12 +27,4 @@ variable "cluster_name" {
 variable "cluster_domain" {
   description = "Domain name of the cluster"
   type        = string
-}
-variable "vm_definitions" {
-  description = "Definitions of virtual machines including CPU, memory, and static IP configuration"
-  type = map(object({
-    cpus   = number
-    memory = number
-    ip     = string
-  }))
 }
