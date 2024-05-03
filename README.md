@@ -349,7 +349,7 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | Memory           | 1093MiB / 35904MiB                     |
 | Disk             | 1.5TB / 3.0TB                          |
 
-# Server Configuration Summary
+### Server Configuration Summary
 
 ## Server Specifications
 
@@ -430,7 +430,7 @@ This configuration provides a detailed view of the system setup, ensuring all el
 
 Este documento presenta la configuración técnica de cada máquina virtual establecida bajo el dominio `cefaslocalserver.com`, proporcionando detalles sobre los recursos de hardware asignados y las direcciones IP fijas dentro de una red NAT.
 
-# Configuración de Red Virtualizada con Terraform
+### Configuración de Red Virtualizada con Terraform
 
 ```terraform
 resource "libvirt_network" "kube_network" {
