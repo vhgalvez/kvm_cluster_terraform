@@ -60,3 +60,4 @@ echo "192.168.120.10 ipa.example.com ipa" | sudo tee -a /etc/hosts
 Instala y configura el DNS durante la instalación de FreeIPA y verifica utilizando comandos como `dig` o `nslookup`.
 
 Esta documentación técnica detalla los pasos para establecer un servidor de DNS usando Rocky Linux y FreeIPA, proporcionando una base sólida para servicios de red internos.
+
