@@ -397,3 +397,26 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | /dev/mapper/rl-home| 3.0T   | 25G    | ~3.0T     | 1%   | /home      |
 
 This configuration provides a detailed view of the system setup, ensuring all elements are concisely documented for effective cluster management.
+
+
+# Documento Técnico: Configuración de Máquinas Virtuales en CEFAS Local Server
+## Red NAT con IPs Fijas y Nombres de Dominio Asignados
+
+| Máquina          | CPU (cores) | Memoria (MB) | IP          | Dominio                               |
+|------------------|-------------|--------------|-------------|---------------------------------------|
+| **Bootstrap1**   | 1           | 1024         | 10.17.3.10  | bootstrap.cefaslocalserver.com       |
+| **Master1**      | 2           | 2048         | 10.17.3.11  | master1.cefaslocalserver.com         |
+| **Master2**      | 2           | 2048         | 10.17.3.12  | master2.cefaslocalserver.com         |
+| **Master3**      | 2           | 2048         | 10.17.3.13  | master3.cefaslocalserver.com         |
+| **Worker1**      | 2           | 2048         | 10.17.3.14  | worker1.cefaslocalserver.com         |
+| **Worker2**      | 2           | 2048         | 10.17.3.15  | worker2.cefaslocalserver.com         |
+| **Worker3**      | 2           | 2048         | 10.17.3.16  | worker3.cefaslocalserver.com         |
+| **FreeIPA1**     | 1           | 1024         | 10.17.3.17  | dns.cefaslocalserver.com             |
+| **Load Balancer1** | 1        | 1024         | 10.17.3.18  | loadbalancer.cefaslocalserver.com    |
+| **NFS1**         | 1           | 1024         | 10.17.3.19  | nfs.cefaslocalserver.com             |
+| **PostgreSQL1**  | 1           | 1024         | 10.17.3.20  | postgresql.cefaslocalserver.com      |
+| **Bastion1**     | 1           | 1024         | 10.17.3.21  | bastion.cefaslocalserver.com         |
+| **Elasticsearch1** | 2        | 2048         | 10.17.3.22  | elasticsearch.cefaslocalserver.com   |
+| **Kibana1**      | 1           | 1024         | 10.17.3.23  | kibana.cefaslocalserver.com          |
+
+Este documento presenta la configuración técnica de cada máquina virtual establecida bajo el dominio `cefaslocalserver.com`, proporcionando detalles sobre los recursos de hardware asignados y las direcciones IP fijas dentro de una red NAT.
