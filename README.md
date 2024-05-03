@@ -119,8 +119,7 @@ Este documento no solo guía la implementación técnica sino que también enfat
 
 Este enfoque estructurado asegura que todos los aspectos de la red y la seguridad están adecuadamente planificados y documentados, proporcionando una base sólida para la implementación exitosa del clúster OpenShift. Este documento debe servir como una guía clara para los equipos de infraestructura en la implementación y mantenimiento del clúster, asegurando que todos los componentes trabajen de manera cohesiva y segura.
 
-![Clúster Openshift](detailed_clúster_openshift_architecture.png)
-
+![Clúster Openshif arqutectura](detailed_cluster_architecture.png)
 
 # Clúster OpenShift
 
