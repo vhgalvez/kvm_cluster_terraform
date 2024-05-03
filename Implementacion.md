@@ -22,11 +22,6 @@ Para permitir el sobrecompromiso de memoria, que puede ser necesario en entornos
 sysctl vm.overcommit_memory=1
 ```
 
-
-
-
-
-
 #  Administración del Servicio Libvirt
 Verificar el Estado del Servicio Libvirt
 Para comprobar el estado del servicio Libvirt y asegurarte de que está activo y funcionando, usa:
@@ -88,19 +83,6 @@ Ver ayuda de CPU con QEMU:
 bash
 Copy code
 /usr/libexec/qemu-kvm -cpu help
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
