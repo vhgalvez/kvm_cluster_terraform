@@ -28,15 +28,6 @@ resource "libvirt_network" "kube_network" {
   name      = "kube_network"
   mode      = "nat"
   addresses = ["10.17.3.0/24"]
-
-  dns {
-    enabled    = true
-    local_only = true
-  }
-
-  dhcp {
-    enabled = false
-  }
 }
 
 resource "libvirt_pool" "volumetmp" {
@@ -53,7 +44,7 @@ resource "libvirt_volume" "base" {
 }
 
 data "template_file" "vm-configs" {
-  for_each = var.vm_definitions # Use the direct map
+  for_each = var.vm_definitions # Usar directamente el mapa
 
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
 
@@ -67,11 +58,10 @@ data "template_file" "vm-configs" {
 }
 
 data "ct_config" "vm-ignitions" {
-  for_each = var.vm_definitions # Use the direct map
+  for_each = var.vm_definitions # Usar directamente el mapa
 
   content = data.template_file.vm-configs[each.key].rendered
 }
-
 resource "libvirt_ignition" "ignition" {
   for_each = var.vm_definitions
 
@@ -99,7 +89,6 @@ resource "libvirt_domain" "machine" {
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
-    addresses      = [cidrhost("10.17.3.0/24", 10 + each.index)] # Assign static IP within a defined range
   }
 
   disk {
@@ -113,6 +102,7 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
   }
 }
+
 
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
