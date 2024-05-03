@@ -10,14 +10,8 @@ from diagrams.onprem.queue import Kafka
 from diagrams.elastic.elasticsearch import Elasticsearch, Kibana
 from diagrams.onprem.network import Bind9, Traefik
 
-with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
-    
-    
-    with Cluster("Data Center Infrastructure"):
-
-        main_server = Server("Main Server")
-
-        
+with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):        
+    with Cluster("Data Center Infrastructure"):        
         with Cluster("Physical Server: ProLiant DL380 (Rocky Linux)"):
 
             with Cluster("OpenShift Nodes"):
@@ -25,7 +19,6 @@ with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
                 masters = [Server(f"Master Node {i+1}") for i in range(3)]
                 workers = [Server(f"Worker Node {i+1}") for i in range(3)]
                 
-                main_server >> bootstrap
                 bootstrap >> masters
                 for master in masters:
                     master >> workers
