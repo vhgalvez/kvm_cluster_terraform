@@ -63,7 +63,6 @@ Utilizar Ansible para la automatización de configuraciones y manejo eficiente d
 
 Este documento no solo guía la implementación técnica sino que también enfatiza la importancia de una gestión sistemática y una operación eficiente y segura del clúster OpenShift, proporcionando un entorno robusto y escalable para aplicaciones empresariales.
 
-
 | Node Name         | CPUs | Memory (MB) |
 |-------------------|------|-------------|
 | bootstrap1        | 1    | 1024        |
@@ -81,47 +80,55 @@ Este documento no solo guía la implementación técnica sino que también enfat
 | elasticsearch1    | 2    | 2048        |
 | kibana1           | 1    | 1024        |
 
-
-
 # Arquitectura de Red y Seguridad
 
-## 1. Configuración de Red Virtualizada con Open vSwitch:
+## 1. Configuración de Red Virtualizada con Open vSwitch
+
 **Propósito:** Implementar una red virtualizada robusta que soporte las operaciones del clúster con eficiencia y seguridad.
 **Implementación:** Utilizar Open vSwitch para gestionar la red virtual dentro del clúster. Esto incluye la configuración de segmentos de red y reglas para el tráfico entre máquinas virtuales, así como la integración con sistemas externos mediante enrutamiento dinámico o estático.
 
-## 2. Automatización con Terraform:
+## 2. Automatización con Terraform
+
 **Objetivo:** Automatizar la creación y configuración de la infraestructura de red necesaria para el clúster.
 **Especificaciones:** Utilizar Terraform para definir y desplegar configuraciones de red como parte del código de infraestructura, asegurando una replicación fácil y un manejo de configuración coherente.
 
-## 3. Seguridad y Aislamiento de Red:
-### VPN y Firewall:
+## 3. Seguridad y Aislamiento de Red
+
+### VPN y Firewall
+
 - **VPN (Bastion1):** Configurar un servidor VPN usando Bastion con una IP pública asignada. Esto facilita un acceso seguro y controlado al clúster para administración y operaciones.
 - **Firewall:** Establecer y mantener un sistema de firewall robusto que proteja contra accesos no autorizados y regule el tráfico hacia y desde el clúster.
 - **FreeIPA (freeipa1):** Implementar FreeIPA para la gestión de identidades y políticas de seguridad dentro del clúster, ofreciendo un control centralizado sobre autenticaciones y accesos.
 
-## 4. Almacenamiento y Gestión de Datos:
-### Sistemas de Almacenamiento (NFS y PostgreSQL):
+## 4. Almacenamiento y Gestión de Datos
+
+### Sistemas de Almacenamiento (NFS y PostgreSQL)
+
 - **NFS (nfs1):** Proporcionar un sistema de almacenamiento de archivos para datos que requieren alta disponibilidad y acceso rápido.
 - **PostgreSQL (postgresql1):** Gestionar bases de datos críticas para el clúster, proporcionando almacenamiento persistente y transaccional para aplicaciones y servicios del clúster.
 
-## 5. Monitoreo y Alertas:
-### Integración de Prometheus y Grafana:
+## 5. Monitoreo y Alertas
+
+### Integración de Prometheus y Grafana
+
 - **Prometheus:** Configurar Prometheus para monitorear continuamente la salud y el rendimiento del clúster, recolectando métricas en tiempo real.
 - **Grafana:** Usar Grafana para visualizar las métricas recogidas, facilitando análisis y toma de decisiones rápidas y fundadas.
 - **cAdvisor:** Implementar cAdvisor para monitorear el uso de recursos y el rendimiento de los contenedores en el clúster, optimizando la gestión y despliegue de recursos.
 
-## 6. Automatización de Operaciones con Ansible:
+## 6. Automatización de Operaciones con Ansible
+
 - **Playbooks de Ansible:** Desarrollar y ejecutar playbooks para automatizar la configuración y el mantenimiento del clúster, desde la instalación inicial hasta las actualizaciones y manejo de incidentes.
 
 # Resumen de la Configuración del Clúster
+
 **Nodos del Clúster:** Definir la configuración de hardware y software de los nodos Bootstrap, Master y Worker, cada uno con roles específicos y configuraciones optimizadas para soportar las demandas del clúster.
 **Servicios Adicionales:** Detallar los servicios adicionales como balanceadores de carga y elasticsearch para mejorar la escalabilidad y la capacidad de respuesta del sistema.
 
 Este enfoque estructurado asegura que todos los aspectos de la red y la seguridad están adecuadamente planificados y documentados, proporcionando una base sólida para la implementación exitosa del clúster OpenShift. Este documento debe servir como una guía clara para los equipos de infraestructura en la implementación y mantenimiento del clúster, asegurando que todos los componentes trabajen de manera cohesiva y segura.
 
 # Arquitectura de Red y Seguridad
-![Clúster Openshif arqutectura](arquitectura_diagramas/detailed_cluster_architecture.png)
 
+![Clúster Openshif arqutectura](arquitectura_diagramas/detailed_cluster_architecture.png)
 
 # Clúster OpenShift
 
@@ -172,11 +179,11 @@ Este documento es una guía completa para implementar un clúster OpenShift robu
 
 ## Configuración Inicial del Entorno
 
-### Objetivos:
+### Objetivos
 
 - Preparación del entorno: Asegurar la correcta instalación y configuración de todas las herramientas y dependencias.
 
-### Herramientas clave:
+### Herramientas clave
 
 - KVM y libvirt: Facilitan la creación y gestión de las VMs del clúster.
 - Terraform y Ansible: Automatizan la creación de la infraestructura y las configuraciones post-despliegue.
@@ -184,39 +191,39 @@ Este documento es una guía completa para implementar un clúster OpenShift robu
 
 ## Diseño e Infraestructura con Terraform
 
-### Objetivos:
+### Objetivos
 
 - Desarrollo de infraestructura: Configurar redes virtuales y soluciones de almacenamiento.
 
-### Redes Virtuales:
+### Redes Virtuales
 
 - Utilizar Terraform para crear redes segmentadas que mejoren la seguridad.
 
-### Almacenamiento:
+### Almacenamiento
 
 - Integrar soluciones como NFS o SAN para el manejo eficiente de las imágenes de VMs y almacenamiento persistente.
 
 ## Instalación y Configuración del Clúster OpenShift
 
-### Objetivos:
+### Objetivos
 
 - Configuración de VMs: Detallar las especificaciones y roles de los nodos Bootstrap, Master y Worker para garantizar la seguridad y rendimiento del clúster.
 
 ## Configuración de Servicios Adicionales
 
-### Objetivos:
+### Objetivos
 
 - Seguridad y gestión de identidades: Implementar servicios clave como FreeIPA y un equilibrador de carga para mejorar la gestión del tráfico y las identidades.
 
 ## Monitoreo y Alertas
 
-### Objetivos:
+### Objetivos
 
 - Sistema de monitoreo: Configurar herramientas como Prometheus, Grafana y cAdvisor para monitorizar el clúster.
 
 ## Automatización con Ansible
 
-### Objetivos:
+### Objetivos
 
 - Automatización de tareas: Usar Ansible para gestionar configuraciones y automatizar operaciones mediante playbooks.
 
@@ -235,7 +242,6 @@ Este documento es una guía completa para implementar un clúster OpenShift robu
 | Elasticsearch   | 2    | 2048         | Análisis de logs          |
 | Kibana          | 1    | 1024         | Visualización de datos    |
 
-
 | Característica   | Especificación                       |
 |------------------|--------------------------------------|
 | OS               | Rocky Linux 9.3 (Blue Onyx) x86_64   |
@@ -250,8 +256,6 @@ Este documento es una guía completa para implementar un clúster OpenShift robu
 | GPU              | AMD ATI 01:03.0 ES1000                 |
 | Memory           | 1093MiB / 35904MiB                     |
 | Disk             | 1.5TB / 3.0TB                          |
-
-
 
 ## Resumen
 
@@ -345,12 +349,10 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | Memory           | 1093MiB / 35904MiB                     |
 | Disk             | 1.5TB / 3.0TB                          |
 
-
-
-
 # Server Configuration Summary
 
 ## Server Specifications
+
 - **OS:** Rocky Linux 9.3 (Blue Onyx)
 - **Host:** ProLiant DL380 G7
 - **Kernel:** 5.14.0-362.24.1.el9_3.0.1.x86_64
@@ -363,6 +365,7 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 - **Terminal:** /dev/pts/0
 
 ## Network Interfaces
+
 | Interface | IP Address     | Netmask         | Broadcast       |
 |-----------|----------------|-----------------|-----------------|
 | enp3s0f0  | 192.168.0.24   | 255.255.255.0   | 192.168.0.255   |
@@ -372,6 +375,7 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | lo        | 127.0.0.1      | 255.0.0.0       | N/A             |
 
 ## Disk Configuration
+
 - **/dev/sda:** 3.27 TiB
 - **/dev/sdb:** 465.71 GiB
 - **Logical Volume Management:**
@@ -380,6 +384,7 @@ Este documento proporciona una guía detallada para la implementación de un cl�
   - **Home:** 3 TiB
 
 ## Disk Partitions
+
 | Device   | Start      | End        | Size       | Type           |
 |----------|------------|------------|------------|----------------|
 | /dev/sda1| 2048       | 4095       | 2048       | System         |
@@ -387,11 +392,13 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | /dev/sda3| 2101248    | 6204170239 | ~2.89 TiB  | Linux Filesystem|
 
 ## Memory and Storage
+
 - **Total Memory:** 35GiB
 - **Free Memory:** 33GiB
 - **Swap:** 17GiB
 
 ## Filesystem Usage
+
 | Filesystem        | Size   | Used   | Available | Use% | Mounted on |
 |-------------------|--------|--------|-----------|------|------------|
 | /dev/mapper/rl-root| 100G   | 7.5G   | 93G       | 8%   | /          |
@@ -400,8 +407,8 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 
 This configuration provides a detailed view of the system setup, ensuring all elements are concisely documented for effective cluster management.
 
-
 # Configuración de Máquinas Virtuales en CEFAS Local Server
+
 ## Red NAT con IPs Fijas y Nombres de Dominio Asignados
 
 | Máquina          | CPU (cores) | Memoria (MB) | IP          | Dominio                               |
@@ -422,3 +429,13 @@ This configuration provides a detailed view of the system setup, ensuring all el
 | **Kibana1**      | 1           | 1024         | 10.17.3.23  | kibana.cefaslocalserver.com          |
 
 Este documento presenta la configuración técnica de cada máquina virtual establecida bajo el dominio `cefaslocalserver.com`, proporcionando detalles sobre los recursos de hardware asignados y las direcciones IP fijas dentro de una red NAT.
+
+# Configuración de Red Virtualizada con Terraform
+
+```terraform
+resource "libvirt_network" "kube_network" {
+  name      = "kube_network"
+  mode      = "nat"
+  addresses = ["10.17.3.0/24"]
+}
+```
