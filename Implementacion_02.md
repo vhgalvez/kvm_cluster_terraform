@@ -233,3 +233,110 @@ Este documento proporciona una guía detallada para la implementación de un cl�
 | /dev/mapper/rl-home| 3.0T   | 25G    | ~3.0T     | 1%   | /home      |
 
 This configuration provides a detailed view of the system setup, ensuring all elements are concisely documented for effective cluster management.
+
+
+
+
+# Proyecto de Infraestructura IT - Resumen Detallado
+
+## Servidor y Virtualización
+- **Servidor**: ProLiant DL380 G7
+- **Sistema Operativo**: Rocky Linux 9.3 (Blue Onyx)
+- **Virtualización**: KVM/QEMU con Flatcar Container Linux
+- **Gestión de Virtualización**: Libvirt
+
+## Red y Conectividad
+- **Switch**: TP-Link LS1008G - 8 puertos Gigabit no administrados
+- **Router WiFi**: Conexión fibra óptica, 600 Mbps de subida/bajada, IP pública
+- **Red**: Configurada con Open vSwitch para manejo avanzado y políticas de red
+- **VPN**: WireGuard para acceso seguro administrado por Bastion Node
+
+## Automatización y Gestión
+- **Herramientas**:
+  - Terraform para infraestructura como código
+  - Ansible para automatización de configuraciones
+
+## Máquinas Virtuales y Roles
+- **Total VMs**: 12
+- **Roles**:
+  - **Bootstrap Node**: 1 CPU, 1024 MB, inicializa clúster
+  - **Master Nodes**: 3 x (2 CPUs, 2048 MB), gestionan el clúster
+  - **Worker Nodes**: 3 x (2 CPUs, 2048 MB), ejecutan aplicaciones
+  - **Bastion Node**: 1 CPU, 1024 MB, seguridad y acceso
+  - **Load Balancer**: 1 CPU, 1024 MB, con Traefik
+
+## Servicios Auxiliares
+- **FreeIPA**: Gestión de identidades, servidor DNS con BIND
+- **Almacenamiento y Backup**:
+  - NFS y PostgreSQL: Soluciones de almacenamiento persistente
+- **Elasticsearch y Kibana**: Análisis y visualización de logs
+
+## Monitorización
+- **Herramientas**:
+  - Prometheus
+  - Grafana
+  - cAdvisor
+  - Nagios para salud y rendimiento del sistema
+
+## Seguridad
+- **Firewall**: Protección y regulación de tráfico
+- **Fail2Ban**: Protección contra ataques de fuerza bruta
+
+## Servicios de Aplicaciones
+- **Apache Kafka**: Mensajería para microservicios
+- **Nginx**: Servidor web para aplicación web
+
+## Resumen de Especificaciones del Servidor
+| Característica | Especificación |
+| -------------- | -------------- |
+| OS             | Rocky Linux 9.3 (Blue Onyx) |
+| Host           | ProLiant DL380 G7 |
+| Kernel         | 5.14.0-362.24.1.el9_3.0.1.x86_64 |
+| Virtualization | KVM |
+| CPU            | Intel Xeon X5650 (24 cores) @ 2.666GHz |
+| GPU            | AMD ATI 01:03.0 ES1000 |
+| Memory         | 1093MiB / 35904MiB |
+| Disk           | 1.5TB / 3.0TB |
+| Network Interfaces | Multiple interfaces configured across various subnets managed by Open vSwitch |
+| Packages       | 1235 (rpm) |
+| Terminal       | /dev/pts/0 |
+
+## Especificaciones de Almacenamiento
+- **Total Memory**: 35GiB
+- **Free Memory**: 33GiB
+- **Swap**: 17GiB
+- **Filesystem Usage**:
+  - **/dev/mapper/rl-root**: 100G, 7.5G used
+  - **/dev/sda2**: 1014M, 718M used
+  - **/dev/mapper/rl-home**: 3.0T, 25G used
+
+## Detalles Técnicos del Clúster
+| Componente     | CPUs | Memoria (MB) | Descripción                  |
+| -------------- | ---- | ------------ | ---------------------------- |
+| Bootstrap Node | 1    | 1024         | Inicializa el clúster        |
+| Master Nodes   | 2    | 2048         | Gestión del clúster          |
+| Worker Nodes   | 2    | 2048         | Ejecución de aplicaciones    |
+| FreeIPA        | 1    | 1024         | Gestión de identidades       |
+| Load Balancer  | 1    | 1024         | Distribución de carga        |
+| NFS            | 1    | 1024         | Almacenamiento de archivos   |
+| PostgreSQL     | 1    |1024         | Gestión de bases de datos            |
+| Bastion Node | 1    | 1024         | Acceso seguro al clúster              |
+| Elasticsearch| 2    | 2048         | Análisis de logs                      |
+| Kibana       | 1    | 1024         | Visualización de datos                |
+
+## Especificaciones del Servidor Físico
+| Característica | Especificación |
+|----------------|----------------|
+| OS             | Rocky Linux 9.3 (Blue Onyx) |
+| Host           | ProLiant DL380 G7 |
+| Kernel         | 5.14.0-362.24.1.el9_3.0.1.x86_64 |
+| Virtualization | KVM |
+| CPU            | Intel Xeon X5650 (24 cores) @ 2.666GHz |
+| GPU            | AMD ATI 01:03.0 ES1000 |
+| Memory         | 1093MiB / 35904MiB |
+| Disk           | 1.5TB / 3.0TB |
+| Network Interfaces | Configured across various subnets and managed by Open vSwitch |
+| Packages       | 1235 (rpm) |
+| Terminal       | /dev/pts/0 |
+
+Este diseño asegura no solo cumplir con los requisitos técnicos del sistema sino también garantizar la escalabilidad, seguridad y eficiencia operativa, adaptándose a las necesidades cambiantes de la infraestructura IT moderna.
