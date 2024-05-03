@@ -6,62 +6,62 @@ from diagrams.onprem.monitoring import Grafana, Prometheus
 from diagrams.generic.os import RedHat
 from diagrams.onprem.database import PostgreSQL
 from diagrams.onprem.network import Nginx
+from diagrams.onprem.queue import Kafka
 from diagrams.elastic.elasticsearch import Elasticsearch, Kibana
 from diagrams.onprem.network import Bind9, Traefik
 
-with Diagram(name="Detailed Clúster OpenShift Architecture kvm", show=False):
+with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
     with Cluster("Data Center Infrastructure"):
-        # Central physical server representation
         with Cluster("Physical Server: ProLiant DL380 (Rocky Linux)"):
-            physical_server = RedHat("Main Server")
+            main_server = Server("Main Server")
 
-            # OpenShift Nodes setup
             with Cluster("OpenShift Nodes"):
                 bootstrap = Server("Bootstrap Node")
                 masters = [Server(f"Master Node {i+1}") for i in range(3)]
                 workers = [Server(f"Worker Node {i+1}") for i in range(3)]
-
-                physical_server >> bootstrap
+                
+                main_server >> bootstrap
                 bootstrap >> masters
                 for master in masters:
                     master >> workers
 
-            # Network services with VPN and Open vSwitch
             with Cluster("Network Services"):
                 vpn = User("VPN (Bastion1) - Public IP via Fiber Optic")
                 ovs = RedHat("Open vSwitch")
-
                 vpn >> ovs
                 ovs >> bootstrap
 
-            # Monitoring setup with Prometheus and Grafana
             with Cluster("Monitoring"):
                 prometheus = Prometheus("Prometheus")
                 grafana = Grafana("Grafana")
                 prometheus >> grafana
 
-            # Additional Services setup with FreeIPA, Load Balancer, NFS, and Database
             with Cluster("Additional Services"):
                 freeipa = RedHat("FreeIPA")
                 load_balancer = Traefik("Load Balancer")
                 nfs = Server("NFS Server")
                 db = PostgreSQL("PostgreSQL Database")
                 elasticsearch = Elasticsearch("Elasticsearch")
-                kibana = Kibana("Kibana")
+                kibana_instance = Kibana("Kibana")
                 dns = Bind9("DNS Server")
 
                 freeipa >> load_balancer
                 nfs >> load_balancer
                 db >> load_balancer
-                elasticsearch >> kibana
-                load_balancer >> [elasticsearch, kibana, dns]
+                elasticsearch >> kibana_instance
+                load_balancer >> [elasticsearch, kibana_instance, dns]
 
-            # Redis configuration for session high availability
             redis = Redis("Redis (Session HA)")
-            redis >> [masters, workers]
+            # Correctly connect Redis to each master and worker node individually
+            for master in masters:
+                redis >> master
+            for worker in workers:
+                redis >> worker
 
-            # Connection setup from VPN to all nodes and load balancing
-            vpn >> [masters, workers]
-            load_balancer >> [masters, workers]
+            # Connections
+            vpn >> [master for master in masters]
+            vpn >> [worker for worker in workers]
+            load_balancer >> [master for master in masters]
+            load_balancer >> [worker for worker in workers]
             prometheus >> workers
-            grafana >> kibana
+            grafana >> kibana_instance
