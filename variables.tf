@@ -31,6 +31,6 @@ variable "vm_definitions" {
   type = map(object({
     cpus   = number
     memory = number
-    ip     = string # Ensure this line is added
+    ip     = string
   }))
 }
