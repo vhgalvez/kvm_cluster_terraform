@@ -43,6 +43,20 @@
 - **Apache Kafka**: Mensajería para microservicios
 - **Nginx**: Servidor web para aplicación web
 
+## Detalles Técnicos del Clúster
+| Componente     | CPUs | Memoria (MB) | Descripción                  |
+| -------------- | ---- | ------------ | ---------------------------- |
+| Bootstrap Node | 1    | 1024         | Inicializa el clúster        |
+| Master Nodes   | 2    | 2048         | Gestión del clúster          |
+| Worker Nodes   | 2    | 2048         | Ejecución de aplicaciones    |
+| FreeIPA        | 1    | 1024         | Gestión de identidades       |
+| Load Balancer  | 1    | 1024         | Distribución de carga        |
+| NFS            | 1    | 1024         | Almacenamiento de archivos   |
+| PostgreSQL     | 1    |1024         | Gestión de bases de datos            |
+| Bastion Node | 1    | 1024         | Acceso seguro al clúster              |
+| Elasticsearch| 2    | 2048         | Análisis de logs                      |
+| Kibana       | 1    | 1024         | Visualización de datos                |
+
 ## Especificaciones del Servidor
 | Característica         | Especificación                              |
 |------------------------|---------------------------------------------|
