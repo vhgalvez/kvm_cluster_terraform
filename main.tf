@@ -87,7 +87,7 @@ resource "libvirt_domain" "machine" {
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
-    addresses      = [each.value.ip] # Directly use the IP assigned in vm_definitions
+    addresses      = [each.value.ip] # Correctly refer to the IP
   }
 
   disk {
@@ -101,6 +101,7 @@ resource "libvirt_domain" "machine" {
     listen_type = "address"
   }
 }
+
 
 output "ip_addresses" {
   value = { for key, machine in libvirt_domain.machine : key => machine.network_interface[0].addresses[0] if length(machine.network_interface[0].addresses) > 0 }
