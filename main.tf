@@ -42,7 +42,9 @@ resource "libvirt_volume" "base" {
 
 data "template_file" "vm-configs" {
   for_each = var.vm_definitions
+
   template = file("${path.module}/configs/machine-${each.key}-config.yaml.tmpl")
+
   vars = {
     ssh_keys     = jsonencode(var.ssh_keys),
     name         = each.key,
@@ -54,34 +56,38 @@ data "template_file" "vm-configs" {
 
 data "ct_config" "vm-ignitions" {
   for_each = var.vm_definitions
-  content  = data.template_file.vm-configs[each.key].rendered
+
+  content = data.template_file.vm-configs[each.key].rendered
 }
 
 resource "libvirt_ignition" "ignition" {
   for_each = var.vm_definitions
-  name     = "${each.key}-ignition"
-  pool     = libvirt_pool.volumetmp.name
-  content  = data.ct_config.vm-ignitions[each.key].rendered
+
+  name    = "${each.key}-ignition"
+  pool    = libvirt_pool.volumetmp.name
+  content = data.ct_config.vm-ignitions[each.key].rendered
 }
 
 resource "libvirt_volume" "vm_disk" {
-  for_each      = var.vm_definitions
-  name          = "${each.key}-${var.cluster_name}.qcow2"
+  for_each = var.vm_definitions
+
+  name           = "${each.key}-${var.cluster_name}.qcow2"
   base_volume_id = libvirt_volume.base.id
-  pool          = libvirt_pool.volumetmp.name
-  format        = "qcow2"
+  pool           = libvirt_pool.volumetmp.name
+  format         = "qcow2"
 }
 
 resource "libvirt_domain" "machine" {
   for_each = var.vm_definitions
-  name     = each.key
-  vcpu     = each.value.cpus
-  memory   = each.value.memory
+
+  name   = each.key
+  vcpu   = each.value.cpus
+  memory = each.value.memory
 
   network_interface {
     network_id     = libvirt_network.kube_network.id
     wait_for_lease = true
-    addresses      = [each.value.ip]  # Assign static IP directly
+    addresses      = [each.value.ip] # Directly use the IP assigned in vm_definitions
   }
 
   disk {
