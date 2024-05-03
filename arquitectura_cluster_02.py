@@ -12,8 +12,8 @@ from diagrams.onprem.network import Bind9, Traefik
 
 with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
     with Cluster("Data Center Infrastructure"):
+        main_server = Server("Main Server")
         with Cluster("Physical Server: ProLiant DL380 (Rocky Linux)"):
-            main_server = Server("Main Server")
 
             with Cluster("OpenShift Nodes"):
                 bootstrap = Server("Bootstrap Node")
