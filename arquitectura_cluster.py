@@ -15,7 +15,7 @@ with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
                 bootstrap = Server("Bootstrap Node")
                 masters = [Server(f"Master Node {i+1}") for i in range(3)]
                 workers = [Server(f"Worker Node {i+1}") for i in range(3)]
-                
+
                 bootstrap >> masters
                 for master in masters:
                     master >> workers
@@ -45,6 +45,12 @@ with Diagram(name="Detailed Clúster OpenShift Architecture", show=False):
             redis >> masters
             redis >> workers
 
-            vpn >> [masters, workers]
-            load_balancer >> [masters, workers]
+            # Correct connection setup
+            for master in masters:
+                vpn >> master
+            for worker in workers:
+                vpn >> worker
+
+            load_balancer >> masters
+            load_balancer >> workers
             prometheus >> workers
