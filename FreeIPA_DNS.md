@@ -24,10 +24,12 @@ sudo virt-install \
     --graphics vnc,listen=0.0.0.0 \
     --noautoconsole
 ```
+
 Para conectarte via VNC:
 
+```bash
 sudo virsh vncdisplay RockyLinuxDNS
-
+```
 
 ## Instalación de FreeIPA
 
@@ -43,8 +45,8 @@ Sigue las instrucciones en pantalla para completar la configuración de FreeIPA,
 ## Configuración del Servidor DNS en FreeIPA
 
 1. Establece el nombre de host de FreeIPA:
-    
-    ```bash
+
+```bash
     hostnamectl set-hostname ipa.example.com
 ```
 
@@ -53,7 +55,8 @@ Sigue las instrucciones en pantalla para completar la configuración de FreeIPA,
 ```bash
 echo "192.168.120.10 ipa.example.com ipa" | sudo tee -a /etc/hosts
 ```
-3. Configura y verifica el DNS en FreeIPA:
+
+3. Configura y verifica el DNS en FreeIPA
 Instala y configura el DNS durante la instalación de FreeIPA y verifica utilizando comandos como `dig` o `nslookup`.
 
 Esta documentación técnica detalla los pasos para establecer un servidor de DNS usando Rocky Linux y FreeIPA, proporcionando una base sólida para servicios de red internos.
