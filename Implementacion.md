@@ -13,7 +13,6 @@ chmod +x eliminar_vms.sh
 ```
 
 
-
 # Gestión de Memoria
 
 Para permitir el sobrecompromiso de memoria, que puede ser necesario en entornos de virtualización densa, ajusta el parámetro `vm.overcommit_memory`:
@@ -83,12 +82,6 @@ Ver ayuda de CPU con QEMU:
 bash
 Copy code
 /usr/libexec/qemu-kvm -cpu help
-
-
-
-
-
-
 
 
 
