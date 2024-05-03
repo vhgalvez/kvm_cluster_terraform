@@ -28,7 +28,9 @@ Para comprobar el estado del servicio Libvirt y asegurarte de que está activo y
 ```bash
 sudo systemctl status libvirtd
 ```
+
 Reiniciar el Servicio Libvirt
+
 Un reinicio puede solucionar problemas transitorios con el servicio Libvirt:
 
 bash
@@ -96,8 +98,6 @@ chmod +x eliminar_vms.sh.
 
 
 ./eliminar_vms.sh
-
-
 
 sysctl vm.overcommit_memory
 
