@@ -57,7 +57,11 @@ with Diagram(name="Detailed Cluster Architecture", show=False):
 
             with Cluster("Security & Access"):
                 firewall = Server("Firewall Configuration")
-                vpn >> firewall >> [masters, workers]
+                vpn >> firewall
+                for master in masters:
+                    firewall >> master
+                for worker in workers:
+                    firewall >> worker
 
             redis = Redis("Redis Cache")
             for master in masters:
