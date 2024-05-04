@@ -143,6 +143,7 @@ Internet -> IP Pública en Router -> VPN (WireGuard) -> Firewall -> Bastion Node
 | Máquina   | CPU (cores) | Memoria (MB) | IP          | Dominio                          | Modo de Red |
 |-----------|-------------|--------------|-------------|----------------------------------|-------------|
 | Bastion1  | 1           | 1024         | 10.17.3.21  | bastion.cefaslocalserver.com     | Bridge      |
+
 ### VLAN 105
 
 #### Máquinas Virtuales (KVM)
