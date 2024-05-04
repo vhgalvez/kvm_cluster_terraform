@@ -10,7 +10,8 @@ Este documento ofrece una guía detallada y exhaustiva para implementar un clús
 
 El objetivo de esta fase es preparar el entorno que alojará el clúster, asegurando que todas las herramientas y dependencias necesarias estén correctamente instaladas y configuradas. Esto es esencial para garantizar la estabilidad y la escalabilidad del clúster.
 
-- **KVM y libvirt**: Estas herramientas son fundamentales para la creación y gestión de las máquinas virtuales que constituirán el clúster. La configuración adecuada de KVM asegura una virtualización eficiente y segura, mientras que libvirt proporciona una capa de abstracción para interactuar con el hipervisor, facilitando la gestión de recursos virtuales.
+- **KVM y libvirt**: Estas herramientas son fundamentales para la creación y gestión de las máquinas virtuales que constituirán el clúster. La configuración adecuada de KVM asegura una virtualización eficiente y segura, mientras que libvirt proporciona una capa de abstracción para interactuar con el hipervisor, facilitando la gestión de recursos virtuales. KVM/QEMU , Virsh , Virt-Manager (Virtual Machine Manager)
+- 
 - **Terraform y Ansible**: Terraform se utiliza para automatizar la provisión de la infraestructura, permitiendo un despliegue reproducible y modular del clúster. Ansible complementa esta automatización gestionando configuraciones y automatizando tareas post-despliegue, como la instalación de software y la configuración de servicios.
 - **Open vSwitch**: Configurar Open vSwitch es crucial para implementar una red virtualizada dentro del clúster. Esto permite un manejo avanzado de la red, incluyendo segmentación, seguridad mejorada y optimización del tráfico entre las máquinas virtuales.
 
