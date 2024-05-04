@@ -2,7 +2,6 @@
 
 ## FreeIPA para Configuración de DNS
 
-
 Una vez configurado el nombre de host y la resolución DNS, procede con la instalación de FreeIPA:
 
 ```bash
