@@ -42,8 +42,6 @@ Agrega la dirección IP y el nombre de dominio al archivo `/etc/hosts`:
 echo "10.17.3.17  dns.cefaslocalserver.com ipa" | sudo tee -a /etc/hosts
 ```
 
-
-
 ## Detalles Técnicos del Clúster
 
 | Componente       | CPUs | Memoria (MB) | Descripción                |
