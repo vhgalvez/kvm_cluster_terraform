@@ -82,4 +82,27 @@ Esta configuración garantiza que el Bastion Node sirva como un punto de control
 - Se implementan reglas adicionales en el firewall para bloquear intentos no autorizados y proteger contra ataques comunes.
 
 ## Diagrama de Flujo de Red
+
 Internet -> IP Pública en Router -> VPN (WireGuard) -> Firewall -> Bastion Node (enp3s0f1, modo bridge) -> SSH hacia otros nodos
+
+
+## Integración de Nginx como Servidor Web y Balanceador de Carga
+
+### Configuración del Servidor Nginx
+- Se instala y configura Nginx en un servidor independiente dentro del clúster o fuera de él, según la preferencia de arquitectura.
+- Nginx se configura para actuar como un proxy inverso y balanceador de carga.
+- En la configuración de Nginx, se definen los servidores upstream para apuntar a los nodos del clúster OpenShift, proporcionando así la conectividad al clúster.
+- Se establecen reglas de enrutamiento en Nginx para dirigir el tráfico entrante hacia los nodos del clúster, distribuyendo la carga de manera equitativa entre ellos.
+
+### Integración con el Clúster OpenShift
+- Se configuran los servicios en el clúster OpenShift que deben ser accesibles a través del servidor Nginx, como aplicaciones web o APIs.
+- Se ajustan las configuraciones de red y seguridad en el clúster para permitir la comunicación entrante desde el servidor Nginx.
+- Se establece una conexión segura entre el servidor Nginx y los nodos del clúster, utilizando métodos de autenticación adecuados, como certificados SSL/TLS o tokens de acceso.
+- 
+## Diagrama de Flujo de Red
+
+Internet -> IP Pública en Router -> VPN (WireGuard) -> Firewall -> Bastion Node (enp3s0f1, modo bridge) -> SSH hacia otros nodos
+                                                    |
+                                                    v
+                                            Servidor Nginx (Proxy inverso y balanceador de carga) -> Clúster OpenShift
+
