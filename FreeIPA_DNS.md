@@ -122,7 +122,7 @@ echo "10.17.3.17  dns.cefaslocalserver.com ipa" | sudo tee -a /etc/hosts
 - **Packages:** 1235 (rpm)
 - **Terminal:** /dev/pts/0
 
-## Network Interfaces
+## Network Interfaces fisicas
 
 | Interface | IP Address     | Netmask         | Broadcast       |
 |-----------|----------------|-----------------|-----------------|
