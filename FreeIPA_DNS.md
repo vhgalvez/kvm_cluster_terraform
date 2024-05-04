@@ -50,14 +50,13 @@ Sigue las instrucciones en pantalla para completar la configuración de FreeIPA,
     hostnamectl set-hostname ipa.example.com
 ```
 
-2. Edita el archivo /etc/hosts para agregar la dirección IP y el hostname de tu servidor FreeIPA:
+1. Edita el archivo /etc/hosts para agregar la dirección IP y el hostname de tu servidor FreeIPA:
 
 ```bash
 echo "192.168.120.10 ipa.example.com ipa" | sudo tee -a /etc/hosts
 ```
 
-3. Configura y verifica el DNS en FreeIPA
+1. Configura y verifica el DNS en FreeIPA
 Instala y configura el DNS durante la instalación de FreeIPA y verifica utilizando comandos como `dig` o `nslookup`.
 
 Esta documentación técnica detalla los pasos para establecer un servidor de DNS usando Rocky Linux y FreeIPA, proporcionando una base sólida para servicios de red internos.
-
