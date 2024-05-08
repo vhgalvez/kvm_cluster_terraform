@@ -12,7 +12,7 @@
 
 - **Rocky Linux 9.3 (Blue Onyx)**
 - **rocky linux minimal**
-- **KVM con Libvirt**
+- **KVM con Libvirt**: kvm/qemu y libvirt y Virt-Manager
 - **Flatcar Container Linux**
 
 ### Configuración de Red
@@ -57,6 +57,12 @@
 - **Elasticsearch**
 - **Kibana**
 - **Prometheus y Grafana:** Herramientas para el monitoreo y la visualización de métricas del clúster.
+- **cAdvisor**: Monitorear el rendimiento y uso de recursos por parte de los contenedores.
+- Nagios para salud y rendimiento del sistema
+
+## Seguridad
+- **Firewall**: Protección y regulación de tráfico
+- **Fail2Ban**: Protección contra ataques de fuerza bruta
 
 
 ### Configuración de VLANs y Redes Virtuales
@@ -97,3 +103,173 @@
   - **/dev/mapper/rl-root**: 100G (7.5G usado)
   - **/dev/sda2**: 1014M (718M usado)
   - **/dev/mapper/rl-home**: 3.0T (25G usado)
+
+## Red y Conectividad
+- **Switch**: TP-Link LS1008G - 8 puertos Gigabit no administrados
+- **Router WiFi**: Conexión fibra óptica, 600 Mbps de subida/bajada, IP pública
+- **Red**: Configurada con Open vSwitch para manejo avanzado y políticas de red
+- **VPN**: WireGuard para acceso seguro administrado por Bastion Node
+
+## Máquinas Virtuales y Roles
+- **Total VMs**: 12
+- **Roles**:
+  - **Bootstrap Node**: 1 CPU, 1024 MB, inicializa clúster
+  - **Master Nodes**: 3 x (2 CPUs, 2048 MB), gestionan el clúster
+  - **Worker Nodes**: 3 x (2 CPUs, 2048 MB), ejecutan aplicaciones
+  - **Bastion Node**: 1 CPU, 1024 MB, seguridad y acceso
+  - **Load Balancer**: 1 CPU, 1024 MB, con Traefik
+
+### VLAN 101: Bootstrapping
+| Máquina    | CPU (cores) | Memoria (MB) | IP         | Dominio                           | Sistema Operativo         |
+|------------|-------------|--------------|------------|-----------------------------------|---------------------------|
+| Bootstrap1 | 1           | 1024         | 10.17.3.10 | bootstrap.cefaslocalserver.com    | Flatcar Container Linux   |
+
+### VLAN 102: Masters
+| Máquina | CPU (cores) | Memoria (MB) | IP         | Dominio                         | Sistema Operativo         |
+|---------|-------------|--------------|------------|---------------------------------|---------------------------|
+| Master1 | 2           | 2048         | 10.17.3.11 | master1.cefaslocalserver.com    | Flatcar Container Linux   |
+| Master2 | 2           | 2048         | 10.17.3.12 | master2.cefaslocalserver.com    | Flatcar Container Linux   |
+| Master3 | 2           | 2048         | 10.17.3.13 | master3.cefaslocalserver.com    | Flatcar Container Linux   |
+
+### VLAN 103: Workers
+| Máquina | CPU (cores) | Memoria (MB) | IP         | Dominio                         | Sistema Operativo         |
+|---------|-------------|--------------|------------|---------------------------------|---------------------------|
+| Worker1 | 2           | 2048         | 10.17.3.14 | worker1.cefaslocalserver.com    | Flatcar Container Linux   |
+| Worker2 | 2           | 2048         | 10.17.3.15 | worker2.cefaslocalserver.com    | Flatcar Container Linux   |
+| Worker3 | 2           | 2048         | 10.17.3.16 | worker3.cefaslocalserver.com    | Flatcar Container Linux   |
+
+### VLAN 104: Management and Utility
+| Máquina  | CPU (cores) | Memoria (MB) | IP         | Dominio                         | Modo de Red | Sistema Operativo       |
+|----------|-------------|--------------|------------|---------------------------------|-------------|-------------------------|
+| Bastion1 | 1           | 1024         | 10.17.3.21 | bastion.cefaslocalserver.com    | Bridge      | Rocky Linux 9.3 Minimal |
+
+### VLAN 105: Storage and Databases
+| Máquina     | CPU (cores) | Memoria (MB) | IP         | Dominio                         | Sistema Operativo       |
+|-------------|-------------|--------------|------------|---------------------------------|-------------------------|
+| NFS1        | 1           | 1024         | 10.17.3.19 | nfs.cefaslocalserver.com        | Rocky Linux 9.3 Minimal |
+| PostgreSQL1 | 1           | 1024         | 10.17.3.20 | postgresql.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
+
+### VLAN 106: Load Balancing
+| Máquina       | CPU (cores) | Memoria (MB) | IP         | Dominio                           | Sistema Operativo       |
+|---------------|-------------|--------------|------------|-----------------------------------|-------------------------|
+| Load Balancer1| 1           | 1024         | 10.17.3.18 | loadbalancer.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
+
+### VLAN 107: Identity Management
+| Máquina  | CPU (cores) | Memoria (MB) | IP         | Dominio                       | Sistema Operativo       |
+|----------|-------------|--------------|------------|-------------------------------|-------------------------|
+| FreeIPA1 | 1           | 1024         | 10.17.3.17 | dns.cefaslocalserver.com      | Rocky Linux 9.3 Minimal |
+
+### Análisis y Visualización de Datos
+| Máquina       | CPU (cores) | Memoria (MB) | IP         | Dominio                           | Sistema Operativo       |
+|---------------|-------------|--------------|------------|-----------------------------------|-------------------------|
+| Elasticsearch1| 2           | 2048         | 10.17.3.22 | elasticsearch.cefaslocalserver.com| Rocky Linux 9.3 Minimal |
+| Kibana1       | 1           | 1024         | 10.17.3.23 | kibana.cefaslocalserver.com       | Rocky Linux 9.3 Minimal |
+
+
+
+
+
+
+
+
+### Hardware del Servidor
+- **Modelo**: ProLiant DL380 G7
+- **CPU**: Intel Xeon X5650, 24 cores, 2.666GHz
+- **GPU**: AMD ATI 01:03.0 ES1000
+- **Memoria**: 1093MiB / 35904MiB
+- **Almacenamiento**: 1.5TB principal, 3.0TB secundario
+
+### Sistemas Operativos y Virtualización
+- **Rocky Linux 9.3 (Blue Onyx)**, **Flatcar Container Linux**
+- **Virtualización**: KVM con Libvirt
+
+### Configuración de Red
+- **Open vSwitch**: Gestión de VLANs y redes virtuales
+- **Conectividad**: VPN con WireGuard, IP Pública, DHCP en KVM
+- **Seguridad**: Firewall, Modo NAT y Bridge
+
+### Máquinas Virtuales y Roles
+- **Nodos**: Bastion (seguridad), Bootstrap (inicialización), Master (gestión), Worker (aplicaciones), FreeIPA (identidades), Load Balancer, NFS (almacenamiento), PostgreSQL (bases de datos), Elasticsearch (logs), Kibana (visualización)
+
+### Interfaces de Red Identificadas
+- **enp3s0f0**, **enp3s0f1** (Bridge en Bastion), **enp4s0f0**, **enp4s0f1**, **lo (Loopback)**
+
+### Automatización y Orquestación
+- **Herramientas**: Terraform (infraestructura), Ansible (operaciones)
+
+### Análisis y Visualización de Datos
+- **Herramientas**: Elasticsearch, Kibana, Prometheus, Grafana, cAdvisor
+
+### Configuración de VLANs
+- **VLAN 101-107**: Diversos roles desde Bootstrap hasta FreeIPA
+
+### Seguridad y Protección
+- **Firewall y Fail2Ban**: Protección avanzada
+- **FreeIPA**: Gestión centralizada de identidades y políticas de seguridad
+
+### Servicios de Aplicaciones
+- **Nginx**: Servidor web y proxy inverso
+- **Apache Kafka**: Plataforma de mensajería para microservicios
+
+### Especificaciones de Almacenamiento y Memoria
+- **Particiones de Disco**: `/dev/sda1` (sistema), `/dev/sda2` (2 GB Linux FS), `/dev/sda3` (~2.89 TiB Linux FS)
+- **Uso de Memoria**: Total 35GiB, Free 33GiB, Swap 17GiB
+- **Filesystem**: Uso de `/dev/mapper/rl-root`, `/dev/sda2`, `/dev/mapper/rl-home`
+
+### Red y Conectividad
+- **Switch y Router**: Gestión de tráfico y conectividad, configuración con Open vSwitch y WireGuard
+
+### Detalles de Máquinas Virtuales y VLANs
+#### VLAN 101: Bootstrapping
+| Máquina    | CPU | Memoria | IP        | Dominio                          | SO                  |
+|------------|-----|---------|-----------|----------------------------------|---------------------|
+| Bootstrap1 | 1   | 1024    | 10.17.3.10| bootstrap.cefaslocalserver.com   | Flatcar Container   |
+
+#### VLAN 102: Masters
+| Máquina | CPU | Memoria | IP        | Dominio                        | SO                  |
+|---------|-----|---------|-----------|--------------------------------|---------------------|
+| Master1 | 2   | 2048    | 10.17.3.11| master1.cefaslocalserver.com   | Flatcar Container   |
+| Master2 | 2   | 2048    | 10.17.3.12| master2.cefaslocalserver.com   | Flatcar Container   |
+| Master3 | 2   | 2048    | 10.17.3.13| master3.cefaslocalserver.com   | Flatcar Container   |
+
+#### VLAN 103: Workers
+| Máquina | CPU | Memoria | IP        | Dominio                        | SO                  |
+|---------|-----|---------|-----------|--------------------------------|---------------------|
+| Worker1 | 2   | 2048    | 10.17.3.14| worker1.cefaslocalserver.com   | Flatcar Container   |
+| Worker2 | 2   | 2048    | 10.17.3.15| worker2.cefaslocalserver.com   | Flatcar Container   |
+| Worker3 | 2   | 2048    | 10.17.3.16| worker3.cefaslocalserver.com   | Flat```markdown
+| Worker3 | 2   | 2048    | 10.17.3.16| worker3.cefaslocalserver.com   | Flatcar Container   |
+
+#### VLAN 104: Management and Utility
+| Máquina  | CPU | Memoria | IP         | Dominio                         | Modo de Red | SO                |
+|----------|-----|---------|------------|---------------------------------|-------------|-------------------|
+| Bastion1 | 1   | 1024    | 10.17.3.21 | bastion.cefaslocalserver.com    | Bridge      | Rocky Linux 9.3 Minimal |
+
+#### VLAN 105: Storage and Databases
+| Máquina     | CPU | Memoria | IP         | Dominio                         | SO                |
+|-------------|-----|---------|------------|---------------------------------|-------------------|
+| NFS1        | 1   | 1024    | 10.17.3.19 | nfs.cefaslocalserver.com        | Rocky Linux 9.3 Minimal |
+| PostgreSQL1 | 1   | 1024    | 10.17.3.20 | postgresql.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
+
+#### VLAN 106: Load Balancing
+| Máquina       | CPU | Memoria | IP         | Dominio                           | SO                |
+|---------------|-----|---------|------------|-----------------------------------|-------------------|
+| Load Balancer1| 1   | 1024    | 10.17.3.18 | loadbalancer.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
+
+#### VLAN 107: Identity Management
+| Máquina  | CPU | Memoria | IP         | Dominio                       | SO                |
+|----------|-----|---------|------------|-------------------------------|-------------------|
+| FreeIPA1 | 1   | 1024    | 10.17.3.17 | dns.cefaslocalserver.com      | Rocky Linux 9.3 Minimal |
+
+### Análisis y Visualización de Datos
+| Máquina       | CPU | Memoria | IP         | Dominio                           | SO                |
+|---------------|-----|---------|------------|-----------------------------------|-------------------|
+| Elasticsearch1| 2   | 2048    | 10.17.3.22 | elasticsearch.cefaslocalserver.com| Rocky Linux 9.3 Minimal |
+| Kibana1       | 1   | 1024    | 10.17.3.23 | kibana.cefaslocalserver.com       | Rocky Linux 9.3 Minimal |
+
+
+
+
+
+
+
