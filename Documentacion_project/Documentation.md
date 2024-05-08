@@ -3,12 +3,28 @@
 ## 1. Preparación del Entorno
 
    1. **Verificación de Hardware**:
-      - Confirmar compatibilidad del hardware con KVM y libvirt.
+      - Confirmar compatibilidad del hardware con KVM y libvirt
+  
+    Para confirmar si tu hardware es compatible con KVM y si puedes utilizar libvirt para gestionar máquinas virtuales en Rocky Linux 9.3 (Blue Onyx), puedes seguir estos pasos:
+
+1. **Verificar soporte de virtualización en el hardware**
+   Antes de todo, asegúrate de que tu CPU soporte la virtualización. Los procesadores Intel deben tener habilitadas las tecnologías VT-x (para Intel) y VT-d (si quieres usar dispositivos de entrada/salida virtualizados), mientras que en AMD debes buscar soporte para AMD-V.
+
+   **Comando para verificar:**
+   Abre una terminal y ejecuta el siguiente comando para ver si tu CPU soporta KVM:
+
+   ```bash
+   egrep -c '(vmx|svm)' /proc/cpuinfo
+   ```
+ 
   
    2. **Instalación de KVM y Libvirt**:
       - Instalar y configurar KVM y libvirt en Rocky Linux para la gestión de la virtualización.
    3. **Instalación de Terraform y Ansible**:
       - Configurar ambos para automatizar la infraestructura y la configuración del clúster.
+
+Si el resultado es un número mayor que 0, tu procesador soporta virtualización. Si el resultado es 0, es posible que necesites entrar en la BIOS/UEFI de tu sistema para habilitar la virtualización.
+
 
 ## 2. Diseño de Infraestructura
 
