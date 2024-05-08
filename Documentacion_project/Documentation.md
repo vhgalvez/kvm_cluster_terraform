@@ -4,6 +4,7 @@
 
    1. **Verificación de Hardware**:
       - Confirmar compatibilidad del hardware con KVM y libvirt.
+  
    2. **Instalación de KVM y Libvirt**:
       - Instalar y configurar KVM y libvirt en Rocky Linux para la gestión de la virtualización.
    3. **Instalación de Terraform y Ansible**:
