@@ -6,26 +6,27 @@
    
       - Confirmar compatibilidad del hardware con KVM y libvirt
   
-      - Para confirmar si tu hardware es compatible con KVM y si puedes utilizar libvirt 
-      para gestionar máquinas virtuales en Rocky Linux 9.3 (Blue Onyx), puedes seguir estos pasos:
+      - Para confirmar si tu hardware es compatible con KVM y si puedes utilizar libvirt
+         para gestionar máquinas virtuales en Rocky Linux 9.3 (Blue Onyx), puedes seguir estos pasos:
 
-      - Antes de todo, asegúrate de que tu CPU soporte la virtualización. Los procesadores Intel deben tener habilitadas las tecnologías VT-x (para Intel) y VT-d (si quieres usar dispositivos de entrada/salida virtualizados), mientras que en AMD debes buscar soporte para AMD-V.
+         - Antes de todo, asegúrate de que tu CPU soporte la virtualización. Los procesadores Intel deben tener habilitadas las tecnologías VT-x (para Intel) y VT-d (si quieres usar dispositivos de entrada/salida virtualizados), mientras que en AMD debes buscar soporte para AMD-V.
 
-         **Comando para verificar:**
-         Abre una terminal y ejecuta el siguiente comando para ver si tu CPU soporta KVM:
+            **Comando para verificar:**
+            Abre una terminal y ejecuta el siguiente comando para ver si tu CPU soporta KVM:
 
-         ```bash
-         egrep -c '(vmx|svm)' /proc/cpuinfo
-         ```
-          ```bash
-          [victory@server ~]$ egrep -c '(vmx|svm)' /proc/cpuinfo
-          48
-          ```
+            ```bash
+            egrep -c '(vmx|svm)' /proc/cpuinfo
+            ```
 
-   El comando `egrep -c '(vmx|svm)' /proc/cpuinfo` busca en la información del procesador las extensiones de virtualización:
+            ```bash
+            [victory@server ~]$ egrep -c '(vmx|svm)' /proc/cpuinfo
+            48
+            ```
 
-   - `vmx`: Tecnología de virtualización VT-x de Intel.
-   - `svm`: Tecnología de virtualización AMD-V de AMD.
+         El comando `egrep -c '(vmx|svm)' /proc/cpuinfo` busca en la información del procesador las extensiones de virtualización:
+
+         - `vmx`: Tecnología de virtualización VT-x de Intel.
+         - `svm`: Tecnología de virtualización AMD-V de AMD.
 
    El número `48` indica que hay 48 núcleos o hilos en el procesador que soportan estas tecnologías de virtualización.
 
