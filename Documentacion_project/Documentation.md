@@ -17,6 +17,20 @@
          ```bash
          egrep -c '(vmx|svm)' /proc/cpuinfo
          ```
+          ```bash
+          [victory@server ~]$ egrep -c '(vmx|svm)' /proc/cpuinfo
+          48
+          ```
+
+   El comando `egrep -c '(vmx|svm)' /proc/cpuinfo` busca en la información del procesador las extensiones de virtualización:
+
+   - `vmx`: Tecnología de virtualización VT-x de Intel.
+   - `svm`: Tecnología de virtualización AMD-V de AMD.
+
+   El número `48` indica que hay 48 núcleos o hilos en el procesador que soportan estas tecnologías de virtualización.
+
+Conclusión
+Este resultado positivo confirma que el hardware de tu servidor es compatible con virtualización a nivel de hardware, lo cual es crucial para el uso eficiente de KVM (Kernel-based Virtual Machine)
 
    2. **Instalación de KVM y Libvirt**:
    
