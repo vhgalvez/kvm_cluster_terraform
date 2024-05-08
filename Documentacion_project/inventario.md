@@ -11,6 +11,7 @@
 ### Sistemas Operativos y Virtualización
 
 - **Rocky Linux 9.3 (Blue Onyx)**
+- **rocky linux minimal**
 - **KVM con Libvirt**
 - **Flatcar Container Linux**
 
@@ -22,6 +23,9 @@
 - **DHCP en KVM**
 - **Firewall**
 - **Modo NAT y Bridge**
+- **VLANs**: 101, 102, 103, 104, 105, 106, 107
+- **Switch y Router:** Facilitan la comunicación y conectividad del clúster.
+
 
 ### Máquinas Virtuales y Roles
 
