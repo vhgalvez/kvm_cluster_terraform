@@ -58,7 +58,7 @@
 - **Kibana**
 - **Prometheus y Grafana:** Herramientas para el monitoreo y la visualización de métricas del clúster.
 - **cAdvisor**: Monitorear el rendimiento y uso de recursos por parte de los contenedores.
-- Nagios para salud y rendimiento del sistema
+- **Nagios**: para salud y rendimiento del sistema
 
 ## Seguridad
 
