@@ -32,8 +32,8 @@
 - **Bootstrap Node**: Inicializa el clúster
 - **Master Nodes**: Gestión del clúster
 - **Worker Nodes**: Ejecución de aplicaciones
-- **FreeIPA Node**: Gestión de identidades
-- **Load Balancer Node**
+- **FreeIPA Node**: DNS y Gestión de identidades
+- **Load Balancer Node**: Traefik para balanceo de carga
 - **NFS Node**: Almacenamiento de archivos
 - **PostgreSQL Node**: Gestión de bases de datos
 - **Elasticsearch Node**: Análisis de logs
@@ -81,6 +81,7 @@
 
 
 ### Especificaciones de Almacenamiento y Memoria
+
 - **Configuración de Disco y Particiones**:
   - **/dev/sda**: 3.27 TiB
   - **/dev/sdb**: 465.71 GiB
