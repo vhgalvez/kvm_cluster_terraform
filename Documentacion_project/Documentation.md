@@ -30,8 +30,7 @@
 
    El número `48` indica que hay 48 núcleos o hilos en el procesador que soportan estas tecnologías de virtualización.
 
-Conclusión
-Este resultado positivo confirma que el hardware de tu servidor es compatible con virtualización a nivel de hardware, lo cual es crucial para el uso eficiente de KVM (Kernel-based Virtual Machine)
+ **Conclusión**: Este resultado positivo confirma que el hardware de tu servidor es compatible con virtualización a nivel de hardware, lo cual es crucial para el uso eficiente de KVM (Kernel-based Virtual Machine)
 
    2. **Instalación de KVM y Libvirt**:
    
