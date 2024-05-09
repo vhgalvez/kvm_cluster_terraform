@@ -26,6 +26,17 @@
 - **VLANs**: 101, 102, 103, 104, 105, 106, 107
 - **Switch y Router:** Facilitan la comunicación y conectividad del clúster.
 
+### Máquinas Virtuales y sistemas operativos
+
+- **Bastion Node**: rocky linux minimal
+- **Bootstrap Node**: rocky linux minimal
+- **Master Nodes**: Flatcar Container Linux
+- **Worker Nodes**: Flatcar Container Linux
+- **FreeIPA Node**: rocky linux minimal
+- **Load Balancer Node**: rocky linux minimal
+- **PostgreSQL Node**: rocky linux minimal
+
+
 ### Máquinas Virtuales y Roles
 
 - **Bastion Node**: Punto de acceso seguro, modo de red Bridge, interfaz enp3s0f1
@@ -34,10 +45,7 @@
 - **Worker Nodes**: Ejecución de aplicaciones
 - **FreeIPA Node**: DNS y Gestión de identidades
 - **Load Balancer Node**: Traefik para balanceo de carga
-- **NFS Node**: Almacenamiento de archivos
 - **PostgreSQL Node**: Gestión de bases de datos
-- **Elasticsearch Node**: Análisis de logs
-- **Kibana Node**: Visualización de datos
 
 ### Interfaces de Red Identificadas
 
@@ -52,38 +60,36 @@
 - **Terraform**: Automatización de infraestructura
 - **Ansible**: Configuración y manejo de operaciones
 
-### Análisis y Visualización de Datos
+### Microservicios en pods
 
-- **Elasticsearch**
-- **Kibana**
-- **Prometheus y Grafana:** Herramientas para el monitoreo y la visualización de métricas del clúster.
+#### Análisis y Visualización de Datos
+
+- **ELK Stack Elasticsearch**:visualización de métricas del clúster
+- **ELK Stack Kibana** Visualización de datos
+- **ELK Stack Logstash**: Procesamiento de logs
+- **Prometheus**: Herramientas para el monitoreo
+- **Grafana**: visualización de métricas del clúster
 - **cAdvisor**: Monitorear el rendimiento y uso de recursos por parte de los contenedores.
 - **Nagios**: para salud y rendimiento del sistema
 
-## Seguridad
+#### Microservicios de servicios de Aplicaciones
 
-- **Firewall**: Protección y regulación de tráfico
-- **Fail2Ban**: Protección contra ataques de fuerza bruta
+**Nginx:** Servidor web y proxy inverso para aplicaciones web.
+**Apache Kafka:** Plataforma de mensajería utilizada para la comunicación entre microservicios.
+**Redis:** Almacenamiento en caché y base de datos en memoria para mejorar el rendimiento de las aplicaciones.
 
-### Configuración de VLANs y Redes Virtuales
 
-- **VLAN 101**: Bootstrap Node
-- **VLAN 102**: Master Nodes
-- **VLAN 103**: Worker Nodes
-- **VLAN 104**: Bastion Node
-- **VLAN 105**: NFS y PostgreSQL Nodes
-- **VLAN 106**: Load Balancer Node
-- **VLAN 107**: FreeIPA Node
 
 ### Seguridad y Protección
 
 **Firewall y Fail2Ban:** Protección contra accesos no autorizados y ataques.
 **DNS y FreeIPA:** Gestión centralizada de autenticación y políticas de seguridad.
 
-### Servicios de Aplicaciones
 
-**Nginx:** Servidor web y proxy inverso para aplicaciones web.
-**Apache Kafka:** Plataforma de mensajería utilizada para la comunicación entre microservicios.
+
+### Almacenamiento persistente
+
+**Rook y Ceph** Orquestar Ceph en Kubernetes para almacenamiento persistente.
 
 ### Especificaciones de Almacenamiento y Memoria
 
@@ -102,17 +108,28 @@
   - **/dev/mapper/rl-root**: 100G (7.5G usado)
   - **/dev/sda2**: 1014M (718M usado)
   - **/dev/mapper/rl-home**: 3.0T (25G usado)
+  
+### Configuración de VLANs y Redes Virtuales
+
+- **VLAN 101**: Bootstrap Node 1
+- **VLAN 102**: Master Nodes 3
+- **VLAN 103**: Worker Nodes 3
+- **VLAN 104**: Bastion Node 1
+- **VLAN 105**: PostgreSQL Node 1
+- **VLAN 106**: Load Balancer Traefik Node 1  
+- **VLAN 107**: FreeIPA Node 1
+
 
 ## Red y Conectividad
 
 - **Switch**: TP-Link LS1008G - 8 puertos Gigabit no administrados
 - **Router WiFi**: Conexión fibra óptica, 600 Mbps de subida/bajada, IP pública
 - **Red**: Configurada con Open vSwitch para manejo avanzado y políticas de red
-- **VPN**: WireGuard para acceso seguro administrado por Bastion Node
+- **VPN**: WireGuard para acceso seguro ssh administrado por Bastion Node
 
 ## Máquinas Virtuales y Roles
 
-- **Total VMs**: 12
+- **Total VMs**: 9
 - **Roles**:
   - **Bootstrap Node**: 1 CPU, 1024 MB, inicializa clúster
   - **Master Nodes**: 3 x (2 CPUs, 2048 MB), gestionan el clúster
@@ -152,7 +169,6 @@
 
 | Máquina     | CPU (cores) | Memoria (MB) | IP         | Dominio                         | Sistema Operativo       |
 | ----------- | ----------- | ------------ | ---------- | ------------------------------- | ----------------------- |
-| NFS1        | 1           | 1024         | 10.17.3.19 | nfs.cefaslocalserver.com        | Rocky Linux 9.3 Minimal |
 | PostgreSQL1 | 1           | 1024         | 10.17.3.20 | postgresql.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
 
 ### VLAN 106: Load Balancing
@@ -166,10 +182,3 @@
 | Máquina  | CPU (cores) | Memoria (MB) | IP         | Dominio                  | Sistema Operativo       |
 | -------- | ----------- | ------------ | ---------- | ------------------------ | ----------------------- |
 | FreeIPA1 | 1           | 1024         | 10.17.3.17 | dns.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
-
-### Análisis y Visualización de Datos
-
-| Máquina        | CPU (cores) | Memoria (MB) | IP         | Dominio                            | Sistema Operativo       |
-| -------------- | ----------- | ------------ | ---------- | ---------------------------------- | ----------------------- |
-| Elasticsearch1 | 2           | 2048         | 10.17.3.22 | elasticsearch.cefaslocalserver.com | Rocky Linux 9.3 Minimal |
-| Kibana1        | 1           | 1024         | 10.17.3.23 | kibana.cefaslocalserver.com        | Rocky Linux 9.3 Minimal |
